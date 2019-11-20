@@ -5,7 +5,8 @@ from ..training._loggers import IILTrainingLogger
 from ..training._optimization import *
 from ..training._parametrization import *
 from ..training._settings import *
-from learning.imitation.learners.random_exploration import RandomExploration
+from learning.imitation.learners import RandomExploration
+
 MIXING_DECAYS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 
 import torch.optim as opt
@@ -26,32 +27,32 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
         parametrization=policy_parametrization,
         task_metadata=[task_horizon, task_episodes, 1]
     )
-
-    learner = NeuralNetworkPolicy(
-        model=policy_parametrization,
-        optimizer=policy_optimizer,
-        storage_location=experimental_entry(
-            algorithm='dagger',
-            experiment_iteration=config.iteration,
-            parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
-            horizon=HORIZONS[config.horizon],
-            episodes=EPISODES[config.horizon],
-            optimization_name='adam',
-            learning_rate=[1e-3],
-            metadata={
-                'decay': MIXING_DECAYS[config.decay]
-            }
-        ),
-        batch_size=32,
-        epochs=50
-    )
+    learner = RandomExploration(env)
+    # learner = NeuralNetworkPolicy(
+    #     model=policy_parametrization,
+    #     optimizer=policy_optimizer,
+    #     storage_location=experimental_entry(
+    #         algorithm='dagger',
+    #         experiment_iteration=config.iteration,
+    #         parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
+    #         horizon=HORIZONS[config.horizon],
+    #         episodes=EPISODES[config.horizon],
+    #         optimization_name='adam',
+    #         learning_rate=[1e-3],
+    #         metadata={
+    #             'decay': MIXING_DECAYS[config.decay]
+    #         }
+    #     ),
+    #     batch_size=32,
+    #     epochs=50
+    # )
 
     return DAgger(env=env,
                   teacher=teacher,
                   learner=learner,
                   horizon=task_horizon,
                   episodes=task_episodes,
-                  alpha=MIXING_DECAYS[selected_mixing_decay]
+                  alpha=1 #MIXING_DECAYS[selected_mixing_decay]
                   )
 
 

@@ -10,7 +10,7 @@ import argparse
 import math
 import numpy as np
 import gym
-from gym_duckietown.envs import DuckietownEnv
+from src.gym_duckietown.envs import DuckietownEnv
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env-name', default=None)

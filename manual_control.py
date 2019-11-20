@@ -12,9 +12,9 @@ import pyglet
 from pyglet.window import key
 import numpy as np
 import gym
-import gym_duckietown
-from gym_duckietown.envs import DuckietownEnv
-from gym_duckietown.wrappers import UndistortWrapper
+import src.gym_duckietown
+from src.gym_duckietown.envs import DuckietownEnv
+from src.gym_duckietown.wrappers import UndistortWrapper
 
 # from experiments.utils import save_img
 

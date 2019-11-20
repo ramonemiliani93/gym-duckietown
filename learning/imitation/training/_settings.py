@@ -67,7 +67,7 @@ def experimental_entry(algorithm, experiment_iteration, parametrization_name, ho
 
 
 def simulation(at, env=None, reset=True):
-    from gym_duckietown.envs import DuckietownEnv
+    from src.gym_duckietown.envs import DuckietownEnv
     if env is None:
         environment = DuckietownEnv(
             domain_rand=False,
@@ -87,7 +87,7 @@ def simulation(at, env=None, reset=True):
 
 
 def robot():
-    from gym_duckietown.envs import DuckiebotEnv
+    from src.gym_duckietown.envs import DuckiebotEnv
     return DuckiebotEnv()
 
 

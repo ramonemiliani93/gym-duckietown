@@ -2,8 +2,8 @@ import argparse
 import math
 import pyglet
 import gym
-from gym_duckietown.envs import SimpleSimEnv
-from gym_duckietown.wrappers import HeadingWrapper
+from src.gym_duckietown.envs import SimpleSimEnv
+from src.gym_duckietown.wrappers import HeadingWrapper
 from controllers import JoystickController, TensorflowNNController, SharedController
 
 AVAILABLE_CONTROLLERS = {

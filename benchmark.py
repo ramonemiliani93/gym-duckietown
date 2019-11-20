@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-from gym_duckietown.envs import DuckietownEnv
+from src.gym_duckietown.envs import DuckietownEnv
 
 # Benchmark loading time
 st = time.time()

@@ -3,9 +3,9 @@
 import os
 import numpy as np
 import gym
-from gym_duckietown.envs import DuckietownEnv, MultiMapEnv
-from gym_duckietown.simulator import get_agent_corners
-from gym_duckietown.wrappers import PyTorchObsWrapper
+from src.gym_duckietown.envs import DuckietownEnv, MultiMapEnv
+from src.gym_duckietown.simulator import get_agent_corners
+from src.gym_duckietown.wrappers import PyTorchObsWrapper
 
 env = gym.make('Duckietown-udem1-v0')
 
