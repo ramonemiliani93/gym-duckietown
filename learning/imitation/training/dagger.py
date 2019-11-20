@@ -9,7 +9,6 @@ from learning.imitation.learners import RandomExploration
 
 MIXING_DECAYS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 
-import torch.optim as opt
 
 def dagger(env, teacher, experiment_iteration, selected_parametrization, selected_optimization, selected_learning_rate,
            selected_horizon, selected_episode, selected_mixing_decay):
