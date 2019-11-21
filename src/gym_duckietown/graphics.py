@@ -1,6 +1,6 @@
 # coding=utf-8
 import math
-
+import time
 from . import logger
 
 import numpy as np
@@ -89,6 +89,8 @@ def create_frame_buffers(width, height, num_samples):
     # The try block here is because some OpenGL drivers
     # (Intel GPU drivers on macbooks in particular) do not
     # support multisampling on frame buffer objects
+
+    use_multisampling = False
     try:
         # Create a multisampled texture to render into
         fbTex = gl.GLuint(0)
@@ -118,8 +120,9 @@ def create_frame_buffers(width, height, num_samples):
         gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, depth_rb)
 
     except:
+        use_multisampling = True
+    if use_multisampling or gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE:
         logger.debug('Falling back to non-multisampled frame buffer')
-
         # Create a plain texture texture to render into
         fbTex = gl.GLuint(0)
         gl.glGenTextures( 1, byref(fbTex))
@@ -149,10 +152,9 @@ def create_frame_buffers(width, height, num_samples):
         gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, depth_rb)
         gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH_COMPONENT, width, height)
         gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, depth_rb)
-
     # Sanity check
     import pyglet
-    if pyglet.options['debug_gl']:
+    if pyglet.options['debug_gl']: 
       res = gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER)
       assert res == gl.GL_FRAMEBUFFER_COMPLETE
 
