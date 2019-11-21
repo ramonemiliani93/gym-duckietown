@@ -5,7 +5,7 @@ import numpy as np
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 10
-FOLLOWING_DISTANCE = 1
+FOLLOWING_DISTANCE = 0.3
 
 
 class UAPurePursuitPolicy:
@@ -18,11 +18,11 @@ class UAPurePursuitPolicy:
         self.position_threshold = position_threshold
 
     def predict(self, observation, metadata):
-        closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle % 2 * np.pi)
+        closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
         print(self.env.cur_angle)
         if closest_point is None or closest_tangent is None:
             self.env.reset()
-            closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle % 2 * np.pi)
+            closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
 
         iterations = 0
         lookup_distance = self.following_distance
@@ -32,7 +32,7 @@ class UAPurePursuitPolicy:
             # Project a point ahead along the curve tangent,
             # then find the closest point to to that
             follow_point = closest_point + closest_tangent * lookup_distance
-            curve_point, _ = self.env.closest_curve_point(follow_point, self.env.cur_angle % 2 * np.pi)
+            curve_point, _ = self.env.closest_curve_point(follow_point, self.env.cur_angle)
 
             # If we have a valid point on the curve, stop
             if curve_point is not None:
