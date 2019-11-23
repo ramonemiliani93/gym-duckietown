@@ -3,17 +3,18 @@ import math
 import numpy as np
 
 POSITION_THRESHOLD = 0.04
-REF_VELOCITY = 0.9
-GAIN = 1
-FOLLOWING_DISTANCE = 0.2
+REF_VELOCITY = 0.8
+GAIN = 1.1
+FOLLOWING_DISTANCE = 0.25
 
 
 class Stanley:
-    def __init__(self, env, ref_velocity=REF_VELOCITY, gain=GAIN, following_distance=FOLLOWING_DISTANCE):
+    def __init__(self, env, ref_velocity=REF_VELOCITY, gain=GAIN, following_distance=FOLLOWING_DISTANCE, position_threshold=POSITION_THRESHOLD):
         self.env = env
         self.ref_velocity = ref_velocity
         self.gain = gain
         self.following_distance = following_distance
+        self.position_threshold = position_threshold
 
     def predict(self, observation, metadata):
 
@@ -30,9 +31,10 @@ class Stanley:
         angle = lane_pose.angle_rad % (2 * np.pi)
 
         # Project to curve to find curvature
-        velocity = self.ref_velocity * self._get_projected_angle_difference()
-        print( self._get_projected_angle_difference())
-        print(velocity)
+        projected_angle_difference, closest_point = self._get_projected_angle_difference()
+        velocity = self.ref_velocity * projected_angle_difference
+        #print( self._get_projected_angle_difference()[0])
+        #print(velocity)
 
         # Add terms to control
         steering_angle += angle
@@ -40,8 +42,18 @@ class Stanley:
 
         # Translate to angular speed
         omega = velocity * np.sin(steering_angle) * 30
+        action = [velocity, omega]
 
-        return [velocity, omega], 0
+        position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
+        if position_diff > self.position_threshold:  # or velocity_diff > 0.5:
+            return action, 0.0
+        else:
+            if metadata[0] == 0:
+                return action, 0.0
+            if metadata[1] is None:
+                return action, 0.0
+
+        return None, math.inf
 
     def _get_projected_angle_difference(self):
         # Find the projection along the path
@@ -68,7 +80,7 @@ class Stanley:
             return 0
 
         else:
-            return np.dot(curve_angle, closest_tangent)
+            return np.dot(curve_angle, closest_tangent), closest_point
 
         # Compute the difference
 
