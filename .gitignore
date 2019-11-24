@@ -11,3 +11,9 @@ dist
 icra2019/dagger/0/h128e64/pure_pursuit_montecarlo_resnet/adam_lr_[0.001]/decay_0.5/events.out.tfevents.1574321967.RoadRunner.16726.0
 icra2019/dagger/0/h128e64/pure_pursuit_test/adam_lr_[0.001]/decay_0.5/dataset_evolution.pkl
 icra2019/dagger/0/h128e64/pure_pursuit_test/adam_lr_[0.001]/decay_0.5/training.log
+icra2019/dagger/0/h128e64/pure_pursuit_montecarlo_resnet/adam_lr_[0.001]/decay_0.5/events.out.tfevents.1574321967.RoadRunner.16726.0
+icra2019/dagger/0/h128e64/pure_pursuit_test/adam_lr_[0.001]/decay_0.5/dataset_evolution.pkl
+icra2019/dagger/0/h128e64/pure_pursuit_test/adam_lr_[0.001]/decay_0.5/training.log
+icra2019/dagger/0/h128e64/pure_pursuit_montecarlo_resnet/adam_lr_[0.001]/decay_0.5/events.out.tfevents.1574321967.RoadRunner.16726.0
+icra2019/dagger/0/h128e64/pure_pursuit_test/adam_lr_[0.001]/decay_0.5/dataset_evolution.pkl
+icra2019/dagger/0/h128e64/pure_pursuit_test/adam_lr_[0.001]/decay_0.5/training.log

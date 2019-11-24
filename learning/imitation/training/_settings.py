@@ -18,7 +18,7 @@ else:
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-MAP_NAME = 'udem1'
+MAP_NAME = 'udem1' #'loop_pedestrians'#'udem1' #loop_empty
 MAP_STARTING_POSES = [
     [[0.8, 0.0, 1.5], 10.90],
     [[0.8, 0.0, 2.5], 10.90],
@@ -93,8 +93,7 @@ def robot():
 
 # def teacher(env):
 #     return UAPurePursuitPolicy(
-#         env=env,
-#         following_distance=0.3,
+#         env=env
 #     )
 
 def teacher(env):
