@@ -4,8 +4,8 @@ import numpy as np
 
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
-GAIN = 1.15
-FOLLOWING_DISTANCE = 0.3
+GAIN = 1.0
+FOLLOWING_DISTANCE = 0.4
 
 
 class Stanley:
@@ -39,7 +39,7 @@ class Stanley:
         steering_angle += np.arctan2(self.gain * dist, self.ref_velocity)
 
         # Translate to angular speed
-        omega = velocity * np.sin(steering_angle) *25 # v sin(theta) / r
+        omega = velocity * np.sin(steering_angle) * 25 # v sin(theta) / r
         action = [velocity, omega]
 
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
@@ -79,8 +79,3 @@ class Stanley:
 
         else:
             return np.dot(curve_angle, closest_tangent), closest_point
-
-        # Compute the difference
-
-
-        # print(position_diff, velocity_diff)
