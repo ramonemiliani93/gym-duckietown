@@ -15,8 +15,12 @@ from ..uncertainty_models import UncertaintyModel
 class NeuralNetworkPolicy(BaseLearner):
 
     def __init__(self, model: UncertaintyModel, optimizer, storage_location, **kwargs):
-        print(kwargs)
-        self.model = model
+        # Reserved
+        self._train_iteration = 0
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        # Base parameters
+        self.model = model.to(self._device)
         self.optimizer = optimizer
         self.dataset = None
         self.storage_location = storage_location
@@ -26,9 +30,6 @@ class NeuralNetworkPolicy(BaseLearner):
         self.epochs = kwargs.get('epochs', 10)
         self.batch_size = kwargs.get('batch_size', 32)
         self.input_shape = kwargs.get('input_shape', (60, 80))
-
-        # Reserved
-        self._train_iteration = 0
 
     def __del__(self):
         self.writer.close()
@@ -44,6 +45,9 @@ class NeuralNetworkPolicy(BaseLearner):
         for epoch in tqdm(range(1, self.epochs + 1)):
             running_loss = 0.0
             for i, data in enumerate(dataloader, 0):
+                # Send data to device
+                data = [variable.to(self._device) for variable in data]
+
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
 
@@ -80,11 +84,11 @@ class NeuralNetworkPolicy(BaseLearner):
         observations = [cv2.resize(observation, dsize=self.input_shape) for observation in observations]
 
         # Transform to tensors
-        compose = Compose([
+        compose_obs = Compose([
             ToTensor(),
             Normalize((0, 0, 0), (1, 1, 1))
         ])
-        observations = torch.stack([compose(observation) for observation in observations])
+        observations = torch.stack([compose_obs(observation) for observation in observations])
         expert_actions = torch.stack([torch.tensor(expert_action) for expert_action in expert_actions])
 
         return observations, expert_actions
