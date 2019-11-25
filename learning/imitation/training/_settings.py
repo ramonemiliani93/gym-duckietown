@@ -18,7 +18,7 @@ else:
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-MAP_NAME = 'loop_dyn_lfv' #'loop_pedestrians'#'udem1' #loop_empty
+MAP_NAME = 'udem1' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
 MAP_STARTING_POSES = [
     [[0.8, 0.0, 1.5], 10.90],
     [[0.8, 0.0, 2.5], 10.90],
@@ -96,22 +96,22 @@ def robot():
 #         env=env
 #     )
 
-# def teacher(env):
-#     return Stanley(
-#         env=env
-#     )
-
 def teacher(env):
-    return StanleyLFV(
+    return Stanley(
         env=env
     )
+
+# def teacher(env):
+#     return StanleyLFV(
+#         env=env
+#     )
 
 def process_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--algorithm', '-a', default=0, type=int)
+    parser.add_argument('--algorithm', '-a', default=1, type=int)
     parser.add_argument('--iteration', '-i', default=0, type=int)
-    parser.add_argument('--horizon', '-r', default=0, type=int)
+    parser.add_argument('--horizon', '-r', default=3, type=int)
     parser.add_argument('--parametrization', '-p', default=0, type=int)
     parser.add_argument('--optimization', '-o', default=0, type=int)
     parser.add_argument('--learning-rate', '-l', default=0, type=int)
