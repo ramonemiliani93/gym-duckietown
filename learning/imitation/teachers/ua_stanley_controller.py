@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-
+from src.gym_duckietown.simulator import NotInLane
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 1.0
@@ -26,7 +26,11 @@ class Stanley:
         #     omega: angular velocity, in rad/sec. Right is negative, left is positive.
 
         steering_angle = 0.
-        lane_pose = self.env.get_lane_pos2(self.env.cur_pos, self.env.cur_angle)
+        try:
+            lane_pose = self.env.get_lane_pos2(self.env.cur_pos, self.env.cur_angle)
+        except NotInLane:
+            self.env.reset()
+            lane_pose = self.env.get_lane_pos2(self.env.cur_pos, self.env.cur_angle)
         dist = lane_pose.dist  # Distance to lane center. Left is negative, right is positive.
         angle = lane_pose.angle_rad % (2 * np.pi)
 
