@@ -111,10 +111,10 @@ def process_args():
 
     parser.add_argument('--algorithm', '-a', default=1, type=int)
     parser.add_argument('--iteration', '-i', default=0, type=int)
-    parser.add_argument('--horizon', '-r', default=3, type=int)
+    parser.add_argument('--horizon', '-r', default=1, type=int)
     parser.add_argument('--parametrization', '-p', default=0, type=int)
-    parser.add_argument('--optimization', '-o', default=0, type=int)
-    parser.add_argument('--learning-rate', '-l', default=0, type=int)
+    parser.add_argument('--optimization', '-o', default=5, type=int)
+    parser.add_argument('--learning-rate', '-l', default=1, type=int)
     parser.add_argument('--metadata', '-m', default=None)
 
     return parser

@@ -28,6 +28,7 @@ class MonteCarloResnet(nn.Module):
             nn.Linear(32, self.num_outputs)
         )
         self.relu = nn.ReLU()
+        self.episode = 0
 
     def forward(self, images):
         output = self.model(images)
