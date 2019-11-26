@@ -67,10 +67,10 @@ class NeuralNetworkPolicy(BaseLearner):
 
     def predict(self, observation, metadata):
         # Apply transformations to data
-        observation, _ = self._transform([observation.to(self._device)], [0])
+        observation, _ = self._transform([observation], [0])
 
         # Predict with model
-        prediction = self.model.predict_with_uncertainty(observation)
+        prediction = self.model.predict_with_uncertainty(observation.to(self._device))
 
         return prediction
 
