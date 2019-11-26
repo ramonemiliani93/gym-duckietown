@@ -12,7 +12,7 @@ class MonteCarloResnet(nn.Module):
         super(MonteCarloResnet, self).__init__()
         self.p = kwargs.get('p', 0.05)
         self.num_outputs = kwargs.get('num_outputs', 2)
-        self.num_samples = kwargs.get('num_samples', 1000)
+        self.num_samples = kwargs.get('num_samples', 1)
         self.model = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=32, kernel_size=5, stride=2, padding=(2, 2)),
             nn.BatchNorm2d(32),
@@ -110,7 +110,7 @@ class MonteCarloResnetMLP(nn.Module):
         prediction = []
         for i in range(self.num_samples):
             prediction.append(self.predict(*args))
-            print(i)
+
         # Calculate statistics of the outputs
         prediction = torch.stack(prediction)
         mean = prediction.mean(0)
