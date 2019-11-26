@@ -31,14 +31,17 @@ class MonteCarloResnet(nn.Module):
 
     def forward(self, images):
         output = self.model(images)
-        velocity = self.relu(output[:, 0])
-        omega = output[:, 1]
-        return torch.stack((velocity, omega), dim=-1)
+        # velocity = self.relu(output[:, 0])
+        # omega = output[:, 1]
+        # return torch.stack((velocity, omega), dim=-1)
+        return output
 
     def loss(self, *args):
         self.train()
         images, target = args
         prediction = self.forward(images)
+        print(prediction)
+        print(target)
         loss = F.mse_loss(prediction, target, reduction='mean')
         return loss
 
