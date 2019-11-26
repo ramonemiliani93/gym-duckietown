@@ -40,6 +40,10 @@ setup(
             'pygeometry',
             'dataclasses',
             'carnivalmirror==0.6.2',
+            'torchvision==0.4.2',
+            'typing_extensions==3.7.4.1',
+            'tensorflow==2.0.0'
+
         ],
         entry_points={
             'console_scripts': [
