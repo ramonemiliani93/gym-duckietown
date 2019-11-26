@@ -40,8 +40,6 @@ class MonteCarloResnet(nn.Module):
         self.train()
         images, target = args
         prediction = self.forward(images)
-        print(prediction)
-        print(target)
         loss = F.mse_loss(prediction, target, reduction='mean')
         return loss
 

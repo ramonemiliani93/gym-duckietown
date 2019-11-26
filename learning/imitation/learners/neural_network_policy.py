@@ -100,7 +100,6 @@ class NeuralNetworkPolicy(BaseLearner):
         else:
             # Just include new experiences
             length = len(self.dataset)
-            print(length)
             self.dataset += TensorDataset(observations[length:, ...], expert_actions[length:, ...])
         dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True)
 
