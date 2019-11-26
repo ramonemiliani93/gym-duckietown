@@ -1,4 +1,5 @@
-from typing import Tuple
+import os
+from typing import Tuple, List
 
 import torch
 from torch.utils.data import Dataset
@@ -61,19 +62,40 @@ class SineDataset(Dataset):
         return y
 
 
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
+class MemoryMapDataset(Dataset):
+    """Dataset to store multiple arrays on disk avoiding saturating the RAM"""
+    def __init__(self, size: int, data_size: tuple, target_size: tuple, path: str):
+        self.size = size
+        self.data_size = data_size
+        self.target_size = target_size
+        self.path = path
 
-    # Create dataset
-    dataset = SineDataset(500, (0, 10))
+        # Path for each array
+        self.data_path = os.path.join(path, 'data.dat')
+        self.target_path = os.path.join(path, 'target.dat')
 
-    # Create plot
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+        # Create arrays
+        self.data = np.memmap(self.data_path, dtype='float32', mode='w+', shape=(self.size, *self.data_size))
+        self.target = np.memmap(self.target_path, dtype='float32', mode='w+', shape=(self.size, *self.target_size))
 
-    # Extract all points and plot
-    data = [x.numpy() for index in range(len(dataset)) for x in dataset[index]]
-    ax.scatter(data[::2], data[1::2])
+        # Initialize number of saved records to zero
+        self.length = 0
 
-    plt.title('Sine scatter plot')
-    plt.show()
+    def __getitem__(self, item) -> Tuple[torch.Tensor, torch.Tensor]:
+        sample = torch.tensor(self.data[item, ...])
+        target = torch.tensor(self.target[item, ...])
+
+        return sample, target
+
+    def __len__(self) -> int:
+        return self.length
+
+    def extend(self, observations: List[np.ndarray], actions: List[np.ndarray]):
+        for index, (observation, action) in enumerate(zip(observations, actions)):
+            self.data[self.length + index, ...] = observation.astype(np.float32)
+            self.target[self.length + index, ...] = action.astype(np.float32)
+        self.length += len(observations)
+
+    def save(self):
+        # TODO
+        pass
