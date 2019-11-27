@@ -42,8 +42,8 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=64,
-        epochs=20,
+        batch_size=32,
+        epochs=50,
         input_shape=(120,160)
     )
 
@@ -104,6 +104,6 @@ if __name__ == '__main__':
         episodes=EPISODES[config.horizon]
     )
 
-    algorithm.train(debug=True)  #DEBUG)
+    algorithm.train(debug=False)  #DEBUG
 
     environment.close()

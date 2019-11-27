@@ -14,14 +14,23 @@ class MonteCarloSqueezenet(nn.Module):
         super(MonteCarloSqueezenet, self).__init__()
         print('Loading Squeeze net')
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.p = kwargs.get('p', 0.2)
+        self.p = kwargs.get('p', 0.1)
         self.num_outputs = kwargs.get('num_outputs', 2)
         self.num_samples = kwargs.get('num_samples', 1)
         
-        self.model = models.squeezenet1_0(pretrained=True)
+        self.model = models.squeezenet1_1(pretrained=True)
         # removing some high level features not needed in this context
-        final_conv = nn.Conv2d(512, self.num_outputs, kernel_size=1, stride=1)
-        self.model.classifier[1] = final_conv
+        self.model.features = nn.Sequential(*list(self.model.features.children())[:6])
+        final_conv = nn.Conv2d(32, self.num_outputs, kernel_size=1, stride=1)
+        self.model.classifier = nn.Sequential(
+            nn.Dropout(p=self.p),
+            nn.Conv2d(128, 64, kernel_size=3, stride=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 32, kernel_size=3, stride=1),
+            nn.Dropout(p=self.p),
+            final_conv,
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
         self.model.num_classes = self.num_outputs
         self.episode = 0
         self.n_epochs = 0
