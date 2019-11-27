@@ -43,7 +43,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
             }
         ),
         batch_size=64,
-        epochs=50,
+        epochs=20,
         input_shape=(120,160)
     )
 

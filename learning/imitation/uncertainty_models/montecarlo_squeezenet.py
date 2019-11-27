@@ -21,17 +21,8 @@ class MonteCarloSqueezenet(nn.Module):
         self.model = models.squeezenet1_0(pretrained=False)
         # removing some high level features not needed in this context
         self.model.features = nn.Sequential(*list(self.model.features.children())[:8])
-        final_conv = nn.Conv2d(32, self.num_outputs, kernel_size=1, stride=1)
-        self.model.classifier = nn.Sequential(
-            nn.Conv2d(256, 128, kernel_size=3, stride=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(128, 64, kernel_size=3, stride=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 32, kernel_size=3, stride=1),
-            nn.Dropout(p=self.p),
-            final_conv,
-            nn.AdaptiveAvgPool2d((1, 1))
-        )
+        final_conv = nn.Conv2d(512, self.num_outputs, kernel_size=1, stride=1)
+        self.model.classifier[1] = final_conv
         self.model.num_classes = self.num_outputs
         self.episode = 0
         self.n_epochs = 0
