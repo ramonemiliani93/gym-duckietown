@@ -4,7 +4,7 @@ from torchvision import models
 import torch.nn.functional as F
 
 from learning.utils.model import enable_dropout
-
+from torch.nn import SmoothL1Loss
 
 class MonteCarloSqueezenet(nn.Module):
 
@@ -22,6 +22,7 @@ class MonteCarloSqueezenet(nn.Module):
         self.episode = 0
         self.n_epochs = 0
         self.freeze_pretrained_modules()
+        self.criterion = SmoothL1Loss(reduction='mean')
 
         #TODO add auto tune paramter for the first episode
 
@@ -50,8 +51,7 @@ class MonteCarloSqueezenet(nn.Module):
             self.n_epochs +=1
         images, target = args
         prediction = self.forward(images)
-        loss = F.mse_loss(prediction, target, reduction='mean')
-        
+        loss = self.criterion(prediction,target)
         return loss
 
     def predict(self, *args):

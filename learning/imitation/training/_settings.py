@@ -70,7 +70,7 @@ def simulation(at, env=None, reset=True):
     from src.gym_duckietown.envs import DuckietownEnv
     if env is None:
         environment = DuckietownEnv(
-            domain_rand=False,
+            domain_rand=True,
             max_steps=math.inf,
             map_name=MAP_NAME
         )
