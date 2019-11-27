@@ -21,14 +21,15 @@ class MonteCarloSqueezenet(nn.Module):
         #TODO check finetuning parameters
         self.model = models.squeezenet1_0(pretrained=True)
         #TODO add dropout which is in classifier[0] nn.Dropout(p=0.5) with p value coming to the model
-        self.model.classifier[1] = nn.Conv2d(512, self.num_outputs, kernel_size=(1,1), stride=(1,1))
+        final_conv = nn.Conv2d(512, self.num_outputs, kernel_size=(1,1), stride=(1,1))
+        self.model.classifier[1] = final_conv
         self.model.num_classes = self.num_outputs
         self.episode = 0
         self.n_epochs = 0
         self.freeze_pretrained_modules()
         #self.criterion = SmoothL1Loss(reduction='mean')
 
-        for m in self.modules():
+        for m in self.model.classifier.modules():
             if isinstance(m, nn.Conv2d):
                 if m is final_conv:
                     init.normal_(m.weight, mean=0.0, std=0.01)
