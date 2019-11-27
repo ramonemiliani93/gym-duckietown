@@ -17,7 +17,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
 
     policy_parametrization = parametrization(
         iteration=selected_parametrization,
-        extra_parameters={'p': 0.2, 'num_outputs': 2, 'num_samples': 10}
+        extra_parameters={'p': 0.2, 'num_outputs': 2, 'num_samples': 1}
     )
 
     policy_optimizer = optimizer(
@@ -36,13 +36,13 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
             parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
             horizon=HORIZONS[config.horizon],
             episodes=EPISODES[config.horizon],
-            optimization_name='adam',
+            optimization_name=OPTIMIZATION_METHODS_NAMES[config.optimization],
             learning_rate=LEARNING_RATES[config.learning_rate],
             metadata={
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=32,
+        batch_size=64,
         epochs=50,
         input_shape=(120,160)
     )
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         horizon=HORIZONS[config.horizon],
         episodes=EPISODES[config.horizon],
         optimization_name='adam',
-        learning_rate=[1e-3],
+        learning_rate=LEARNING_RATES[config.learning_rate],
         metadata={
             'decay': MIXING_DECAYS[config.decay]
         }
@@ -104,6 +104,6 @@ if __name__ == '__main__':
         episodes=EPISODES[config.horizon]
     )
 
-    algorithm.train(debug=False)  #DEBUG)
+    algorithm.train(debug=True)  #DEBUG)
 
     environment.close()

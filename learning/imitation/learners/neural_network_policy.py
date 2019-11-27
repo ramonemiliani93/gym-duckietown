@@ -35,7 +35,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
         # Load previous weights
         if 'model_path' in kwargs:
-            self.model.load_state_dict(torch.load(kwargs.get('model_path')))
+            self.model.load_state_dict(torch.load(kwargs.get('model_path'),map_location=self._device))
             print('Loaded ')
 
     def __del__(self):
