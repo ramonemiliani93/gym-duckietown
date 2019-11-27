@@ -5,6 +5,8 @@ import torch.nn.functional as F
 
 from learning.utils.model import enable_dropout
 from torch.nn import SmoothL1Loss
+import torch.nn.init as init
+
 
 class MonteCarloSqueezenet(nn.Module):
 
@@ -24,7 +26,16 @@ class MonteCarloSqueezenet(nn.Module):
         self.episode = 0
         self.n_epochs = 0
         self.freeze_pretrained_modules()
-        self.criterion = SmoothL1Loss(reduction='mean')
+        #self.criterion = SmoothL1Loss(reduction='mean')
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                if m is final_conv:
+                    init.normal_(m.weight, mean=0.0, std=0.01)
+                else:
+                    init.kaiming_uniform_(m.weight)
+                if m.bias is not None:
+                    init.constant_(m.bias, 0)
 
         #TODO add auto tune paramter for the first episode
 
@@ -58,7 +69,7 @@ class MonteCarloSqueezenet(nn.Module):
         #TODO update loss function to give more priority to omega predictions
         loss_velocity = F.mse_loss(prediction[:,0],target[:,0], reduction='mean')
         loss_omega = F.mse_loss(prediction[:,1],target[:,1], reduction='mean')
-        loss = loss_velocity + 4 * loss_omega
+        loss = loss_velocity + 1.5 * loss_omega
         return loss
 
     def predict(self, *args):
