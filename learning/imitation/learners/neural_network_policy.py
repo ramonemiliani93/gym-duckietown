@@ -91,7 +91,8 @@ class NeuralNetworkPolicy(BaseLearner):
         # Transform to tensors
         compose_obs = Compose([
             ToTensor(),
-            Normalize((0, 0, 0), (1, 1, 1))
+            Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # using imagenet normalization values
+            #Normalize((0, 0, 0), (1, 1, 1))
         ])
         observations = [compose_obs(observation).numpy() for observation in observations]
         expert_actions = [torch.tensor(expert_action).numpy() for expert_action in expert_actions]
