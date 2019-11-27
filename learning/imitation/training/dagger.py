@@ -37,13 +37,14 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
             horizon=HORIZONS[config.horizon],
             episodes=EPISODES[config.horizon],
             optimization_name='adam',
-            learning_rate=[1e-3],
+            learning_rate=LEARNING_RATES[config.learning_rate],
             metadata={
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
         batch_size=32,
-        epochs=50
+        epochs=50,
+        input_shape=(120,160)
     )
 
     return DAgger(env=env,
