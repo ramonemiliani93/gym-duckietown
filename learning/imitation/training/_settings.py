@@ -63,6 +63,9 @@ def experimental_entry(algorithm, experiment_iteration, parametrization_name, ho
         for key in metadata:
             entry += '{}_{}/'.format(key, metadata[key])
 
+    # Create entry
+    os.makedirs(entry, exist_ok=True)
+
     return entry
 
 
