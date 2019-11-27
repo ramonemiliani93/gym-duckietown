@@ -11,6 +11,8 @@ from torch.utils.tensorboard import SummaryWriter
 from .learner import BaseLearner
 from ..uncertainty_models import UncertaintyModel
 from learning.utils.dataset import MemoryMapDataset
+from learning.utils.running_average import RunningAverage
+
 
 class NeuralNetworkPolicy(BaseLearner):
 
@@ -50,7 +52,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
         # Train model
         for epoch in tqdm(range(1, self.epochs + 1)):
-            running_loss = 0.0
+            running_loss = RunningAverage()
             for i, data in enumerate(dataloader, 0):
                 # Send data to device
                 data = [variable.to(self._device) for variable in data]
@@ -64,10 +66,10 @@ class NeuralNetworkPolicy(BaseLearner):
                 self.optimizer.step()
 
                 # Statistics
-                running_loss += loss.item()
+                running_loss.update(loss.item())
 
             # Logging
-            self._logging(loss=running_loss, epoch=epoch)
+            self._logging(loss=running_loss(), epoch=epoch)
 
         # Post training routine
         self._on_optimization_end()
