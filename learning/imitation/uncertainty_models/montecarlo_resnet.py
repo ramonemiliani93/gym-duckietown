@@ -128,9 +128,9 @@ if __name__ == '__main__':
     from learning.utils.dataset import SineDataset
     from torch.optim import Adam
 
-    model = MonteCarloResnetMLP(p=0.05, num_samples=3000)
-    trainloader = DataLoader(SineDataset(500, (0, 10)), batch_size=256)
-    optimizer = Adam(model.parameters(), lr=1e-2, weight_decay=0.000000095)
+    model = MonteCarloResnetMLP(p=0.05, num_samples=1000)
+    trainloader = DataLoader(SineDataset(500, (0, 10)), batch_size=500)
+    optimizer = Adam(model.parameters(), lr=1e-2, weight_decay=0)
 
     for epoch in range(10000):  # loop over the dataset multiple times
 
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     plt.ylim(-15, 15)
     plt.xlim(-4, 14)
     ax = sns.lineplot(x="x", y="y", data=df, ci='sd')
-    func = x * np.sin(x) + 0.3 + 0.3 * x
+    func = x * np.sin(x)
     sns.lineplot(x, func, color="coral")
     plt.show()
     # error = np.array(variance) ** 0.5
