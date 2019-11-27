@@ -42,7 +42,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=32,
+        batch_size=128,
         epochs=50
     )
 
@@ -51,13 +51,13 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                   learner=learner,
                   horizon=task_horizon,
                   episodes=task_episodes,
-                  alpha=MIXING_DECAYS[selected_mixing_decay]
+                  alpha= MIXING_DECAYS[selected_mixing_decay]
                   )
 
 
 if __name__ == '__main__':
     parser = process_args()
-    parser.add_argument('--decay', '-d', default=0, type=int)
+    parser.add_argument('--decay', '-d', default=6, type=int)
 
     config = parser.parse_args()
     # training
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     disk_entry = experimental_entry(
         algorithm='dagger',
         experiment_iteration=config.iteration,
-        parametrization_name='test', #PARAMETRIZATIONS_NAMES[config.parametrization],
+        parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
         horizon=HORIZONS[config.horizon],
         episodes=EPISODES[config.horizon],
         optimization_name='adam',
