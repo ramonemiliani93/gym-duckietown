@@ -87,7 +87,6 @@ class NeuralNetworkPolicy(BaseLearner):
     def _transform(self, observations, expert_actions):
         # Resize images
         observations = [cv2.resize(observation, dsize=self.input_shape[::-1]) for observation in observations]
-        # Notice : opencv changes the order of the channels
         observations = [cv2.cvtColor(observation, cv2.COLOR_BGR2RGB) for observation in observations]
         # Transform to tensors
         compose_obs = Compose([
@@ -96,7 +95,7 @@ class NeuralNetworkPolicy(BaseLearner):
             #Normalize((0, 0, 0), (1, 1, 1))
         ])
         
-        
+        observations = [compose_obs(observation).numpy() for observation in observations]
         expert_actions = [torch.tensor(expert_action).numpy() for expert_action in expert_actions]
 
         return observations, expert_actions
