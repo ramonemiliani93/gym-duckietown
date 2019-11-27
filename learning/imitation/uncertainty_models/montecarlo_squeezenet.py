@@ -14,7 +14,9 @@ class MonteCarloSqueezenet(nn.Module):
         self.p = kwargs.get('p', 0.05)
         self.num_outputs = kwargs.get('num_outputs', 2)
         self.num_samples = kwargs.get('num_samples', 1)
-
+        
+        #TODO add squeezenet transformation to be used on observation images
+        #TODO check finetuning parameters
         self.model = models.squeezenet1_0(pretrained=True)
         #TODO add dropout which is in classifier[0] nn.Dropout(p=0.5) with p value coming to the model
         self.model.classifier[1] = nn.Conv2d(512, self.num_outputs, kernel_size=(1,1), stride=(1,1))
@@ -44,20 +46,24 @@ class MonteCarloSqueezenet(nn.Module):
 
     def loss(self, *args):
         self.train()
+        '''
         if self.episode==0:
             #TODO tune the warm start parameters
             if self.n_epochs >15:
                 self.unfreeze_pretrained()
             self.n_epochs +=1
+        '''
         images, target = args
         prediction = self.forward(images)
-        loss = self.criterion(prediction,target)
+        #TODO update loss function to give more priority to omega predictions
+        loss_velocity = F.mse_loss(prediction[:,0],target[:,0], reduction='mean')
+        loss_omega = F.mse_loss(prediction[:,1],target[:,1], reduction='mean')
+        loss = loss_velocity + 4 * loss_omega
         return loss
 
     def predict(self, *args):
         images = args[0]
         output = self.model(images)
-
         return output
 
     def predict_with_uncertainty(self, *args):
