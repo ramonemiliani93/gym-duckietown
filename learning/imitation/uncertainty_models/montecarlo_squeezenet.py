@@ -6,23 +6,32 @@ import torch.nn.functional as F
 from learning.utils.model import enable_dropout
 from torch.nn import SmoothL1Loss
 import torch.nn.init as init
-
+import numpy as np
 
 class MonteCarloSqueezenet(nn.Module):
 
     def __init__(self, **kwargs):
         super(MonteCarloSqueezenet, self).__init__()
         print('Loading Squeeze net')
-        self.p = kwargs.get('p', 0.05)
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.p = kwargs.get('p', 0.2)
         self.num_outputs = kwargs.get('num_outputs', 2)
         self.num_samples = kwargs.get('num_samples', 1)
         
-        #TODO add squeezenet transformation to be used on observation images
-        #TODO check finetuning parameters
-        self.model = models.squeezenet1_0(pretrained=True)
-        #TODO add dropout which is in classifier[0] nn.Dropout(p=0.5) with p value coming to the model
-        final_conv = nn.Conv2d(512, self.num_outputs, kernel_size=(1,1), stride=(1,1))
-        self.model.classifier[1] = final_conv
+        self.model = models.squeezenet1_0(pretrained=False)
+        # removing some high level features not needed in this context
+        self.model.features = nn.Sequential(*list(self.model.features.children())[:8])
+        final_conv = nn.Conv2d(32, self.num_outputs, kernel_size=1, stride=1)
+        self.model.classifier = nn.Sequential(
+            nn.Conv2d(256, 128, kernel_size=3, stride=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 64, kernel_size=3, stride=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 32, kernel_size=3, stride=1),
+            nn.Dropout(p=self.p),
+            final_conv,
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
         self.model.num_classes = self.num_outputs
         self.episode = 0
         self.n_epochs = 0
@@ -58,20 +67,11 @@ class MonteCarloSqueezenet(nn.Module):
 
     def loss(self, *args):
         self.train()
-        '''
-        if self.episode==0:
-            #TODO tune the warm start parameters
-            if self.n_epochs >15:
-                self.unfreeze_pretrained()
-            self.n_epochs +=1
-        '''
         images, target = args
-        prediction = self.forward(images)
-        #TODO update loss function to give more priority to omega predictions
-        loss_velocity = F.mse_loss(prediction[:,0],target[:,0], reduction='mean')
-        loss_omega = F.mse_loss(prediction[:,1],target[:,1], reduction='mean')
-        loss = loss_velocity + 1.5 * loss_omega
+        prediction = self.forward(images) 
+        loss = F.mse_loss(prediction,target, reduction='mean')
         return loss
+    
 
     def predict(self, *args):
         images = args[0]

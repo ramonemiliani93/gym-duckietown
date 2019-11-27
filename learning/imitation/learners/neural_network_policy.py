@@ -47,7 +47,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
         # Retrieve data loader
         dataloader = self._get_dataloader(observations, expert_actions)
-        self.model.episode = episode
+        print('Starting episode #',str(episode))
         # Train model
         for epoch in tqdm(range(1, self.epochs + 1)):
             running_loss = 0.0
