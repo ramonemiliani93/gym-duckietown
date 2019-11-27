@@ -18,7 +18,7 @@ class MonteCarloSqueezenet(nn.Module):
         self.num_outputs = kwargs.get('num_outputs', 2)
         self.num_samples = kwargs.get('num_samples', 1)
         
-        self.model = models.squeezenet1_0(pretrained=False)
+        self.model = models.squeezenet1_0(pretrained=True)
         # removing some high level features not needed in this context
         final_conv = nn.Conv2d(512, self.num_outputs, kernel_size=1, stride=1)
         self.model.classifier[1] = final_conv
