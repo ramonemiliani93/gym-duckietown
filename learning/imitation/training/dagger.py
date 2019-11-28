@@ -1,4 +1,4 @@
-from ..algorithms import DAgger
+from ..algorithms import DAgger, SimulatedDagger
 from ..learners import NeuralNetworkPolicy
 from ..training._behaviors import Icra2019Behavior
 from ..training._loggers import IILTrainingLogger
@@ -42,18 +42,23 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=32,
+        batch_size=64,
         epochs=50,
         input_shape=(120,160)
     )
+    return SimulatedDagger(env=env,
+                        teacher=teacher,
+                        learner=learner,
+                        horizon = task_horizon,
+                        episodes=task_episodes)
 
-    return DAgger(env=env,
-                  teacher=teacher,
-                  learner=learner,
-                  horizon=task_horizon,
-                  episodes=task_episodes,
-                  alpha=MIXING_DECAYS[selected_mixing_decay]
-                  )
+    # return DAgger(env=env,
+    #               teacher=teacher,
+    #               learner=learner,
+    #               horizon=task_horizon,
+    #               episodes=task_episodes,
+    #               alpha=MIXING_DECAYS[selected_mixing_decay]
+    #               )
 
 
 if __name__ == '__main__':
@@ -104,6 +109,6 @@ if __name__ == '__main__':
         episodes=EPISODES[config.horizon]
     )
 
-    algorithm.train(debug=False)  #DEBUG
+    algorithm.train(debug=True)  #DEBUG
 
     environment.close()
