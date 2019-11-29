@@ -11,8 +11,8 @@ class SimulatedDagger(DAgger):
         # starting with strict limits to use the teacher more and then relaxing this limit to allow the model to explore
         self.max_angle_limit = np.pi/6 
         self.max_distance_limit = 0.48
-        self.angle_limit = np.pi / 12
-        self.distance_limit = 0.1
+        self.angle_limit = np.pi / 6
+        self.distance_limit = 0.3
         self.max_n_episodes = 5# self._episodes // 4
         self.convergence_distance = 0.1
         self.convergence_angle = np.pi / 12 
@@ -41,8 +41,4 @@ class SimulatedDagger(DAgger):
             return self.learner
 
     def _on_episode_done(self):
-        if self._episode <= self.max_n_episodes:
-            decay =  self._episode*1.0/self.max_n_episodes
-            self.angle_limit = self.max_angle_limit * decay
-            self.distance_limit = self.max_distance_limit * decay
         InteractiveImitationLearning._on_episode_done(self)
