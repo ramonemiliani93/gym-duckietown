@@ -36,7 +36,8 @@ class Stanley:
 
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
-        velocity = abs(self.ref_velocity * projected_angle_difference)
+        # fixing velocity
+        velocity = 0.65#abs(self.ref_velocity * projected_angle_difference)
 
         # Add terms to control
         steering_angle += angle

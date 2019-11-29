@@ -34,6 +34,7 @@ class MonteCarloSqueezenet(nn.Module):
         self.model.num_classes = self.num_outputs
         self.episode = 0
         self.n_epochs = 0
+        self.fixed_velocity = 0.65 #TODO add to params space
         self.freeze_pretrained_modules()
         #self.criterion = SmoothL1Loss(reduction='mean')
 
@@ -68,13 +69,21 @@ class MonteCarloSqueezenet(nn.Module):
         self.train()
         images, target = args
         prediction = self.forward(images) 
-        loss = F.mse_loss(prediction,target, reduction='mean')
+        if self.num_outputs==1:
+            loss = F.mse_loss(prediction,target[:,-1].reshape(-1,1), reduction='mean')
+        else:
+            loss = F.mse_loss(prediction,target, reduction='mean')
         return loss
     
 
     def predict(self, *args):
         images = args[0]
         output = self.model(images)
+        if self.num_outputs==1:
+            # in case of only predicting omega
+            v_tensor = torch.tensor([self.fixed_velocity],dtype = output.dtype).to(self._device)
+            v_tensor = torch.cat(output.shape[0]*[v_tensor]).unsqueeze(0)
+            output = torch.cat((v_tensor, output), 1)
         return output
 
     def predict_with_uncertainty(self, *args):
