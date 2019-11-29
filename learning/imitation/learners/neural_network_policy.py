@@ -3,7 +3,7 @@ from tqdm import tqdm
 import cv2
 
 import torch
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor, Normalize, Compose
 from torch.utils.tensorboard import SummaryWriter
 
@@ -33,11 +33,12 @@ class NeuralNetworkPolicy(BaseLearner):
         self.input_shape = kwargs.get('input_shape', (60, 80))
 
         # Create dataset
-        self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
+        if 'no_dataset' not in kwargs:
+            self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
 
         # Load previous weights
         if 'model_path' in kwargs:
-            self.model.load_state_dict(torch.load(kwargs.get('model_path')))
+            self.model.load_state_dict(torch.load(kwargs.get('model_path'), map_location=self._device))
             print('Loaded ')
 
     def __del__(self):
@@ -45,13 +46,13 @@ class NeuralNetworkPolicy(BaseLearner):
 
     def optimize(self, observations, expert_actions, episode):
         # Transform newly received data
-        observations, expert_actions = self._transform(observations, expert_actions)
+        observations, expert_actions = self._train_transform(observations, expert_actions)
 
         # Retrieve data loader
         dataloader = self._get_dataloader(observations, expert_actions)
 
         # Train model
-        for epoch in tqdm(range(1, self.epochs + 1)):
+        for epoch in tqdm(range(1, self.epochs + 1), postfix=["Episode", dict(value=self._train_iteration)]):
             running_loss = RunningAverage()
             for i, data in enumerate(dataloader, 0):
                 # Send data to device
@@ -76,7 +77,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
     def predict(self, observation, metadata):
         # Apply transformations to data
-        observation, _ = self._transform([observation], [0])
+        observation, _ = self._test_transform([observation], [0])
         observation = torch.tensor(observation)
         # Predict with model
         prediction = self.model.predict_with_uncertainty(observation.to(self._device))
@@ -86,7 +87,11 @@ class NeuralNetworkPolicy(BaseLearner):
     def save(self):
         torch.save(self.model.state_dict(), self.storage_location + 'model.pt')
 
-    def _transform(self, observations, expert_actions):
+    def _train_transform(self, observations, expert_actions):
+        # Use same test transform
+        return self._test_transform(observations, expert_actions)
+
+    def _test_transform(self, observations, expert_actions):
         # Resize images
         observations = [cv2.resize(observation, dsize=self.input_shape[::-1]) for observation in observations]
 

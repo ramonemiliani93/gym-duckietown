@@ -37,6 +37,7 @@ class InteractiveImitationTesting:
             for t in range(self._horizon):
                 self._current_horizon = t
                 action = self._act(observation)
+                print(action)
                 next_observation, reward, done, info = self.environment.step(action)
                 if self._debug:
                     self.environment.render()

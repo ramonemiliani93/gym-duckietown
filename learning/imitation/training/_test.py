@@ -1,7 +1,7 @@
 import ast
 
 from ..algorithms.iil_testing import InteractiveImitationTesting
-from ..learners import NeuralNetworkPolicy
+from ..learners import *
 from ..training._behaviors import Icra2019TestBehavior
 from ..training._loggers import Logger
 from ..training._optimization import OPTIMIZATION_METHODS_NAMES, LEARNING_RATES
@@ -20,8 +20,9 @@ def test(config, entry):
         optimizer=None,
         storage_location=None,
         batch_size=32,
-        epochs=50,
-        model_path='/Users/ramon/Documents/udem/2-year/fall/gym-duckietown/icra2019/dagger/0/h1024e8/pure_pursuit_montecarlo_resnet/adam_lr_[0.001]/decay_0.5/model.pt'
+        epochs=25,
+        model_path='/Users/ramon/Documents/udem/2-year/fall/gym-duckietown/icra2019/dagger/0/h256e32/pure_pursuit_montecarlo_resnet/sgd_lr_[1e-06]/decay_0.8/model.pt',
+        no_dataset=True
     )
 
     return InteractiveImitationTesting(
@@ -35,7 +36,7 @@ def test(config, entry):
 
 if __name__ == '__main__':
     parser = process_args()
-    parser.add_argument('--test-horizon', '-th', default=0, type=int)
+    parser.add_argument('--test-horizon', '-th', default=3, type=int)
     config = parser.parse_args()
 
     # training

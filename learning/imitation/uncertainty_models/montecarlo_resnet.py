@@ -10,42 +10,41 @@ class MonteCarloResnet(nn.Module):
 
     def __init__(self, **kwargs):
         super(MonteCarloResnet, self).__init__()
-        self.p = kwargs.get('p', 0.05)
+        self.p = kwargs.get('p', 0.3)
         self.num_outputs = kwargs.get('num_outputs', 2)
         self.num_samples = kwargs.get('num_samples', 1)
-        self.model = nn.Sequential(
+        self.features = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=32, kernel_size=5, stride=2, padding=(2, 2)),
             nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(3),
-            nn.Dropout2d(p=self.p),
             BasicBlock(32, 32),
             nn.Flatten(),
-            nn.Linear(4160, 64),
-            nn.Dropout2d(p=self.p),
-            nn.Linear(64, 32),
-            nn.Dropout2d(p=self.p),
-            nn.Linear(32, self.num_outputs)
         )
-        self.relu = nn.ReLU()
+
+        self.angular = nn.Sequential(
+            nn.Linear(4160, 64),
+            nn.Dropout(p=self.p),
+            nn.Linear(64, 32),
+            nn.Dropout(p=self.p),
+            nn.Linear(32, 1)
+        )
 
     def forward(self, images):
-        output = self.model(images)
-        # velocity = self.relu(output[:, 0])
-        # omega = output[:, 1]
-        # return torch.stack((velocity, omega), dim=-1)
-        return output
+        features = self.features(images)
+        angular = self.angular(features)
+        return angular
 
     def loss(self, *args):
         self.train()
-        images, target = args
+        images, targets = args
         prediction = self.forward(images)
-        loss = F.mse_loss(prediction, target, reduction='mean')
+        loss = F.mse_loss(prediction, targets[:, 1])
         return loss
 
     def predict(self, *args):
         images = args[0]
-        output = self.model(images)
+        output = self.forward(images)
 
         return output
 
@@ -61,11 +60,10 @@ class MonteCarloResnet(nn.Module):
 
         # Calculate statistics of the outputs
         prediction = torch.stack(prediction)
-        mean = prediction.mean(0)
-        var = prediction.var(0)
+        mean = prediction.mean(0).squeeze().tolist()
+        var = prediction.var(0).squeeze().tolist()
 
-        return mean.squeeze().tolist(), var.squeeze().tolist()
-
+        return [0.4, mean], [0, var]
 
 class MonteCarloResnetMLP(nn.Module):
 

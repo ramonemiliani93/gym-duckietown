@@ -76,6 +76,7 @@ class InteractiveImitationLearning:
         pass
 
     def _query_expert(self, control_policy, control_action, uncertainty, observation):
+        # FIXME
         if control_policy == self.learner:
             self.learner_action = control_action
             self.learner_uncertainty = uncertainty  # it might but it wont

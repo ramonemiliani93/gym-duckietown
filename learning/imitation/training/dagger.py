@@ -1,5 +1,5 @@
 from ..algorithms import DAgger
-from ..learners import NeuralNetworkPolicy
+from ..learners import NeuralNetworkPolicy, FeatureExtractor
 from ..training._behaviors import Icra2019Behavior
 from ..training._loggers import IILTrainingLogger
 from ..training._optimization import *
@@ -17,7 +17,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
 
     policy_parametrization = parametrization(
         iteration=selected_parametrization,
-        extra_parameters={'p': 0.2, 'num_outputs': 2, 'num_samples': 10}
+        extra_parameters={}
     )
 
     policy_optimizer = optimizer(
@@ -36,13 +36,13 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
             parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
             horizon=HORIZONS[config.horizon],
             episodes=EPISODES[config.horizon],
-            optimization_name='adam',
-            learning_rate=[1e-3],
+            optimization_name='sgd',
+            learning_rate=[1e-6],
             metadata={
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=128,
+        batch_size=64,
         epochs=50
     )
 
@@ -51,7 +51,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                   learner=learner,
                   horizon=task_horizon,
                   episodes=task_episodes,
-                  alpha= MIXING_DECAYS[selected_mixing_decay]
+                  alpha=MIXING_DECAYS[selected_mixing_decay]
                   )
 
 
@@ -88,8 +88,8 @@ if __name__ == '__main__':
         parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
         horizon=HORIZONS[config.horizon],
         episodes=EPISODES[config.horizon],
-        optimization_name='adam',
-        learning_rate=[1e-3],
+        optimization_name='sgd',
+        learning_rate=[1e-6],
         metadata={
             'decay': MIXING_DECAYS[config.decay]
         }

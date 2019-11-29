@@ -12,11 +12,6 @@ def adamw(model, lr, **kwargs):
 
 
 def adam(model, lr, **kwargs):
-    # learning_rate_tensor = tf.Variable(initial_value=learning_rate, trainable=True)
-    # logging
-    # with tf.name_scope('adam'):
-    #     tf.summary.scalar('learning_rate', learning_rate_tensor)
-
     return opt.Adam(model.parameters(), lr)
 
 
