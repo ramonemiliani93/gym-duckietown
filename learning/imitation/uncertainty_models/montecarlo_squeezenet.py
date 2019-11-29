@@ -15,7 +15,7 @@ class MonteCarloSqueezenet(nn.Module):
         print('Loading Squeeze net')
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.p = kwargs.get('p', 0.1)
-        self.num_outputs = kwargs.get('num_outputs', 2)
+        self.num_outputs = kwargs.get('num_outputs', 1)
         self.num_samples = kwargs.get('num_samples', 1)
         
         self.model = models.squeezenet1_1(pretrained=True)
@@ -89,10 +89,11 @@ class MonteCarloSqueezenet(nn.Module):
 
         # Calculate statistics of the outputs
         prediction = torch.stack(prediction)
-        mean = prediction.mean(0)
-        var = prediction.var(0)
+        mean = prediction.mean(0).squeeze().tolist()
+        var = prediction.var(0).squeeze().tolist()
 
-        return mean.squeeze().tolist(), var.squeeze().tolist()
+        return [0.4, mean], [0, var]
+
 
 if __name__ == '__main__':
     #TODO test the model input and output

@@ -3,7 +3,7 @@ import math
 import numpy as np
 from src.gym_duckietown.simulator import NotInLane
 POSITION_THRESHOLD = 0.04
-REF_VELOCITY = 0.8
+REF_VELOCITY = 0.4
 GAIN = 1.0
 FOLLOWING_DISTANCE = 0.4
 
@@ -36,7 +36,7 @@ class Stanley:
 
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
-        velocity = abs(self.ref_velocity * projected_angle_difference)
+        velocity = self.ref_velocity #abs(self.ref_velocity * projected_angle_difference)
 
         # Add terms to control
         steering_angle += angle
