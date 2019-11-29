@@ -18,15 +18,17 @@ class UAPurePursuitPolicy:
         self.position_threshold = position_threshold
 
     def predict(self, observation, metadata):
-        closest_point, closest_tangent = self.env.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
+        closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
+        print(self.env.cur_angle)
         if closest_point is None or closest_tangent is None:
             self.env.reset()
-            closest_point, closest_tangent = self.env.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
+            closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
 
         iterations = 0
         lookup_distance = self.following_distance
         curve_point = None
-        while iterations < self.max_iterations:
+        print(self.max_iterations)
+        while iterations < 10:
             # Project a point ahead along the curve tangent,
             # then find the closest point to to that
             follow_point = closest_point + closest_tangent * lookup_distance
@@ -34,6 +36,7 @@ class UAPurePursuitPolicy:
 
             # If we have a valid point on the curve, stop
             if curve_point is not None:
+                print(iterations)
                 break
 
             iterations += 1
@@ -45,13 +48,13 @@ class UAPurePursuitPolicy:
         # Compute a normalized vector to the curve point
         point_vec = curve_point - self.env.cur_pos
         point_vec /= np.linalg.norm(point_vec)
-
-        dot = np.dot(self.env.get_right_vec(), point_vec)
-        steering = GAIN * -dot
+        right_vec = np.array([math.sin(self.env.cur_angle),0,math.cos(self.env.cur_angle)])
+        dot = np.dot(right_vec, point_vec)
+        omega = GAIN * -dot
 
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
 
-        action = [self.ref_velocity, steering]
+        action = [self.ref_velocity, omega]
 
         # print(position_diff, velocity_diff)
 

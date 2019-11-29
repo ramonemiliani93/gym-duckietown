@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import cv2
+import os
 
 import torch
 from torch.utils.data import TensorDataset, DataLoader
@@ -10,15 +11,18 @@ from torch.utils.tensorboard import SummaryWriter
 
 from .learner import BaseLearner
 from ..uncertainty_models import UncertaintyModel
-
+from learning.utils.dataset import MemoryMapDataset
 
 class NeuralNetworkPolicy(BaseLearner):
 
     def __init__(self, model: UncertaintyModel, optimizer, storage_location, **kwargs):
-        print(kwargs)
-        self.model = model
+        # Reserved
+        self._train_iteration = 0
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        # Base parameters
+        self.model = model.to(self._device)
         self.optimizer = optimizer
-        self.dataset = None
         self.storage_location = storage_location
         self.writer = SummaryWriter(self.storage_location)
 
@@ -27,8 +31,15 @@ class NeuralNetworkPolicy(BaseLearner):
         self.batch_size = kwargs.get('batch_size', 32)
         self.input_shape = kwargs.get('input_shape', (60, 80))
 
-        # Reserved
-        self._train_iteration = 0
+        # Create dataset
+        if storage_location is not None :
+            self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
+        else:
+            self.dataset = None
+        # Load previous weights
+        if 'model_path' in kwargs:
+            self.model.load_state_dict(torch.load(kwargs.get('model_path'),map_location=self._device))
+            print('Loaded ')
 
     def __del__(self):
         self.writer.close()
@@ -39,11 +50,14 @@ class NeuralNetworkPolicy(BaseLearner):
 
         # Retrieve data loader
         dataloader = self._get_dataloader(observations, expert_actions)
-
+        print('Starting episode #',str(episode))
         # Train model
         for epoch in tqdm(range(1, self.epochs + 1)):
             running_loss = 0.0
             for i, data in enumerate(dataloader, 0):
+                # Send data to device
+                data = [variable.to(self._device) for variable in data]
+
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
 
@@ -64,40 +78,34 @@ class NeuralNetworkPolicy(BaseLearner):
     def predict(self, observation, metadata):
         # Apply transformations to data
         observation, _ = self._transform([observation], [0])
-
+        observation = torch.tensor(observation)
         # Predict with model
-        prediction = self.model.predict_with_uncertainty(observation)
+        prediction = self.model.predict_with_uncertainty(observation.to(self._device))
 
         return prediction
 
     def save(self):
-        torch.save({
-            'model_state_dict': self.model.state_dict(),
-        }, self.storage_location + 'model.pt')
+        torch.save(self.model.state_dict(), self.storage_location + 'model.pt')
 
     def _transform(self, observations, expert_actions):
         # Resize images
-        observations = [cv2.resize(observation, dsize=self.input_shape) for observation in observations]
-
+        observations = [cv2.resize(observation, dsize=self.input_shape[::-1]) for observation in observations]
+        observations = [cv2.cvtColor(observation, cv2.COLOR_BGR2RGB) for observation in observations]
         # Transform to tensors
-        compose = Compose([
+        compose_obs = Compose([
             ToTensor(),
-            Normalize((0, 0, 0), (1, 1, 1))
+            Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # using imagenet normalization values
+            #Normalize((0, 0, 0), (1, 1, 1))
         ])
-        observations = torch.stack([compose(observation) for observation in observations])
-        expert_actions = torch.stack([torch.tensor(expert_action) for expert_action in expert_actions])
+        
+        observations = [compose_obs(observation).numpy() for observation in observations]
+        expert_actions = [torch.tensor(expert_action).numpy() for expert_action in expert_actions]
 
         return observations, expert_actions
 
     def _get_dataloader(self, observations, expert_actions):
-        if self.dataset is None:
-            # First time data is received
-            self.dataset = TensorDataset(observations, expert_actions)
-        else:
-            # Just include new experiences
-            length = len(self.dataset)
-            print(length)
-            self.dataset += TensorDataset(observations[length:, ...], expert_actions[length:, ...])
+        # Include new experiences
+        self.dataset.extend(observations, expert_actions)
         dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True)
 
         return dataloader

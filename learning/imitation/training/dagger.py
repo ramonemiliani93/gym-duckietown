@@ -1,14 +1,14 @@
-from ..algorithms import DAgger
+from ..algorithms import DAgger, SimulatedDagger
 from ..learners import NeuralNetworkPolicy
 from ..training._behaviors import Icra2019Behavior
 from ..training._loggers import IILTrainingLogger
 from ..training._optimization import *
 from ..training._parametrization import *
 from ..training._settings import *
-from learning.imitation.learners.random_exploration import RandomExploration
+from learning.imitation.learners import RandomExploration
+
 MIXING_DECAYS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 
-import torch.optim as opt
 
 def dagger(env, teacher, experiment_iteration, selected_parametrization, selected_optimization, selected_learning_rate,
            selected_horizon, selected_episode, selected_mixing_decay):
@@ -17,7 +17,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
 
     policy_parametrization = parametrization(
         iteration=selected_parametrization,
-        extra_parameters={'p': 0.2, 'num_outputs': 2, 'num_samples': 10}
+        extra_parameters={'p': 0.2, 'num_outputs': 2, 'num_samples': 1}
     )
 
     policy_optimizer = optimizer(
@@ -26,7 +26,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
         parametrization=policy_parametrization,
         task_metadata=[task_horizon, task_episodes, 1]
     )
-
+    # learner = RandomExploration(env)
     learner = NeuralNetworkPolicy(
         model=policy_parametrization,
         optimizer=policy_optimizer,
@@ -36,15 +36,21 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
             parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
             horizon=HORIZONS[config.horizon],
             episodes=EPISODES[config.horizon],
-            optimization_name='adam',
-            learning_rate=[1e-3],
+            optimization_name=OPTIMIZATION_METHODS_NAMES[config.optimization],
+            learning_rate=LEARNING_RATES[config.learning_rate],
             metadata={
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=32,
-        epochs=50
+        batch_size=16,
+        epochs=50,
+        input_shape=(120,160)
     )
+    # return SimulatedDagger(env=env,
+    #                     teacher=teacher,
+    #                     learner=learner,
+    #                     horizon = task_horizon,
+    #                     episodes=task_episodes)
 
     return DAgger(env=env,
                   teacher=teacher,
@@ -57,7 +63,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
 
 if __name__ == '__main__':
     parser = process_args()
-    parser.add_argument('--decay', '-d', default=0, type=int)
+    parser.add_argument('--decay', '-d', default=3, type=int)
 
     config = parser.parse_args()
     # training
@@ -89,7 +95,7 @@ if __name__ == '__main__':
         horizon=HORIZONS[config.horizon],
         episodes=EPISODES[config.horizon],
         optimization_name='adam',
-        learning_rate=[1e-3],
+        learning_rate=LEARNING_RATES[config.learning_rate],
         metadata={
             'decay': MIXING_DECAYS[config.decay]
         }
@@ -103,6 +109,6 @@ if __name__ == '__main__':
         episodes=EPISODES[config.horizon]
     )
 
-    algorithm.train(debug=True)  #DEBUG)
+    algorithm.train(debug=True)  #DEBUG
 
     environment.close()

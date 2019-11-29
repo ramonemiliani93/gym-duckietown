@@ -50,7 +50,7 @@ class InteractiveImitationLearning:
                 try:
                     next_observation, reward, done, info = self.environment.step(action)
                 except Exception as e:
-                    pass
+                    print(e)
                 if self._debug:
                     self.environment.render()
                 self._on_step_done(observation, action, reward, done, info)
