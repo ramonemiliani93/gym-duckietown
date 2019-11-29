@@ -10,10 +10,10 @@ class SimulatedDagger(DAgger):
         self.learner_simulated_uncertainty = None 
         # starting with strict limits to use the teacher more and then relaxing this limit to allow the model to explore
         self.max_angle_limit = np.pi/6 
-        self.max_distance_limit = 0.5
+        self.max_distance_limit = 0.35
         self.angle_limit = np.pi / 12
         self.distance_limit = 0.1
-        self.max_n_episodes = 5 
+        self.max_n_episodes = self._episodes // 4
 
     def _mix(self):
         # TODO create a better check for being within the road limits

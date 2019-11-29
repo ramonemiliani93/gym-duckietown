@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import cv2
+import os
 
 import torch
 from torch.utils.data import TensorDataset, DataLoader
@@ -31,8 +32,10 @@ class NeuralNetworkPolicy(BaseLearner):
         self.input_shape = kwargs.get('input_shape', (60, 80))
 
         # Create dataset
-        self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
-
+        if storage_location is not None and  os.path.isfile(storage_location):
+            self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
+        else:
+            self.dataset = None
         # Load previous weights
         if 'model_path' in kwargs:
             self.model.load_state_dict(torch.load(kwargs.get('model_path'),map_location=self._device))
