@@ -10,31 +10,39 @@ class SimulatedDagger(DAgger):
         self.learner_simulated_uncertainty = None 
         # starting with strict limits to use the teacher more and then relaxing this limit to allow the model to explore
         self.max_angle_limit = np.pi/6 
-        self.max_distance_limit = 0.35
+        self.max_distance_limit = 0.48
         self.angle_limit = np.pi / 12
         self.distance_limit = 0.1
-        self.max_n_episodes = self._episodes // 4
+        self.max_n_episodes = 5# self._episodes // 4
+        self.convergence_distance = 0.1
+        self.convergence_angle = np.pi / 12 
 
     def _mix(self):
         # TODO create a better check for being within the road limits
+        #TODO let the expert take over untill the bot converges back to the right position and then let the learner explore 
+            
         use_teacher=False
         try:
             lp = self.environment.get_lane_pos2(self.environment.cur_pos, self.environment.cur_angle)
-            if abs(lp.dist)>self.distance_limit:
-                use_teacher=True
-            if abs(lp.angle_rad)> self.angle_limit:
+            if abs(lp.dist)>self.distance_limit or abs(lp.angle_rad)> self.angle_limit:
                 use_teacher=True
         except :
             use_teacher=True
+        if self.active_policy:
+            # check for convergence if we are using the teacher to move back to our learner
+            if abs(lp.dist) < self.convergence_distance or abs(lp.angle_rad) < self.convergence_angle:
+                use_teacher = False
+            
         if use_teacher:
-            # teacher needs to take over
+            # teacher needs to take over 
             return self.teacher
         else:
             # if we are in a good shape then we should explore more
             return self.learner
 
     def _on_episode_done(self):
-        decay = max(0.0,(self._episode*1.0/self.max_n_episodes))
-        self.angle_limit = self.max_angle_limit * decay
-        self.distance_limit = self.max_distance_limit * decay
+        if self._episode <= self.max_n_episodes:
+            decay =  self._episode*1.0/self.max_n_episodes
+            self.angle_limit = self.max_angle_limit * decay
+            self.distance_limit = self.max_distance_limit * decay
         InteractiveImitationLearning._on_episode_done(self)
