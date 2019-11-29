@@ -42,7 +42,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=16,
+        batch_size=32,
         epochs=50,
         input_shape=(120,160)
     )
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         parametrization_name='test', #PARAMETRIZATIONS_NAMES[config.parametrization],
         horizon=HORIZONS[config.horizon],
         episodes=EPISODES[config.horizon],
-        optimization_name='adam',
+        optimization_name=OPTIMIZATION_METHODS_NAMES[config.optimization],
         learning_rate=LEARNING_RATES[config.learning_rate],
         metadata={
             'decay': MIXING_DECAYS[config.decay]
