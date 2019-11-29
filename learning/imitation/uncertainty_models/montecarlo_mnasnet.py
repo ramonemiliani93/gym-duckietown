@@ -19,7 +19,7 @@ class MonteCarloMnasnet(nn.Module):
         self.num_outputs = kwargs.get('num_outputs', 2)
         self.num_samples = kwargs.get('num_samples', 1)
 
-        self.model = models.mnasnet1_3(pretrained=True)
+        self.model = models.mnasnet1_0(pretrained=True)
         self.model.classifier = nn.Sequential(
             nn.Dropout(p=self.p, inplace=True),
             nn.Linear(1280, self.num_outputs),
