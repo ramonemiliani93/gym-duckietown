@@ -21,14 +21,14 @@ class MonteCarloSqueezenet(nn.Module):
         self.model = models.squeezenet1_1(pretrained=True)
         # removing some high level features not needed in this context
         self.model.features = nn.Sequential(*list(self.model.features.children())[:6])
-        final_conv = nn.Conv2d(32, self.num_outputs, kernel_size=1, stride=1)
+        self.final_conv = nn.Conv2d(32, self.num_outputs, kernel_size=1, stride=1)
         self.model.classifier = nn.Sequential(
             nn.Dropout(p=self.p),
             nn.Conv2d(128, 64, kernel_size=3, stride=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(64, 32, kernel_size=3, stride=1),
             nn.Dropout(p=self.p),
-            final_conv,
+            self.final_conv,
             nn.AdaptiveAvgPool2d((1, 1)),
         )
         self.linear = nn.Linear(2, 1)
@@ -40,7 +40,7 @@ class MonteCarloSqueezenet(nn.Module):
 
         for m in self.model.classifier.modules():
             if isinstance(m, nn.Conv2d):
-                if m is final_conv:
+                if m is self.final_conv:
                     init.normal_(m.weight, mean=0.0, std=0.01)
                 else:
                     init.kaiming_uniform_(m.weight)
