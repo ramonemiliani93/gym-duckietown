@@ -12,6 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from .learner import BaseLearner
 from ..uncertainty_models import UncertaintyModel
 from learning.utils.dataset import MemoryMapDataset
+from PIL import Image
 
 class NeuralNetworkPolicy(BaseLearner):
 
@@ -89,8 +90,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
     def _transform(self, observations, expert_actions):
         # Resize images
-        observations = [cv2.resize(observation, dsize=self.input_shape[::-1]) for observation in observations]
-        observations = [cv2.cvtColor(observation, cv2.COLOR_BGR2RGB) for observation in observations]
+        observations = [Image.fromarray(cv2.resize(observation, dsize=self.input_shape[::-1])) for observation in observations]
         # Transform to tensors
         compose_obs = Compose([
             ToTensor(),
