@@ -15,6 +15,8 @@ class Stanley:
         self.gain = gain
         self.following_distance = following_distance
         self.position_threshold = position_threshold
+        self.max_speed = 0.8
+        self.min_speed = 0.35
 
     def predict(self, observation, metadata):
 
@@ -37,7 +39,10 @@ class Stanley:
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
         # fixing velocity
-        velocity = 0.65#abs(self.ref_velocity * projected_angle_difference)
+        if projected_angle_difference>0.95:
+            velocity = self.max_speed 
+        else:
+            velocity = self.min_speed 
 
         # Add terms to control
         steering_angle += angle
