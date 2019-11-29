@@ -14,7 +14,7 @@ class MonteCarloSqueezenet(nn.Module):
         super(MonteCarloSqueezenet, self).__init__()
         print('Loading Squeeze net')
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.p = kwargs.get('p', 0.1)
+        self.p = kwargs.get('p', 0.5)
         self.num_outputs = kwargs.get('num_outputs', 1)
         self.num_samples = kwargs.get('num_samples', 1)
         
@@ -29,8 +29,9 @@ class MonteCarloSqueezenet(nn.Module):
             nn.Conv2d(64, 32, kernel_size=3, stride=1),
             nn.Dropout(p=self.p),
             final_conv,
-            nn.AdaptiveAvgPool2d((1, 1))
+            nn.AdaptiveAvgPool2d((1, 1)),
         )
+        self.linear = nn.Linear(2, 1)
         self.model.num_classes = self.num_outputs
         self.episode = 0
         self.n_epochs = 0
@@ -67,14 +68,15 @@ class MonteCarloSqueezenet(nn.Module):
     def loss(self, *args):
         self.train()
         images, target = args
-        prediction = self.forward(images) 
-        loss = F.mse_loss(prediction,target, reduction='mean')
+        prediction = self.linear(self.forward(images))
+
+        loss = F.mse_loss(prediction, target[:, 1], reduction='mean')
         return loss
-    
 
     def predict(self, *args):
         images = args[0]
-        output = self.model(images)
+        output = self.linear(self.model(images))
+
         return output
 
     def predict_with_uncertainty(self, *args):
