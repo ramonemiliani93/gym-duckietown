@@ -32,7 +32,7 @@ class NeuralNetworkPolicy(BaseLearner):
         self.input_shape = kwargs.get('input_shape', (60, 80))
 
         # Create dataset
-        if storage_location is not None and  os.path.isfile(storage_location):
+        if storage_location is not None :
             self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
         else:
             self.dataset = None
