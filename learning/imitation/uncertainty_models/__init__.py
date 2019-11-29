@@ -1,3 +1,4 @@
 from .uncertainty_model import UncertaintyModel
 from .montecarlo_resnet import MonteCarloResnet
 from .montecarlo_squeezenet import MonteCarloSqueezenet
+from .montecarlo_mnasnet import MonteCarloMnasnet
