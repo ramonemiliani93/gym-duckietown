@@ -1,105 +1,74 @@
 tiles:
-- [grass,         grass,         grass,         grass,         grass,         grass,         grass,         grass]
-- [curve_right/N, straight/W,    curve_left/N,  grass,         grass,         grass,         grass,         grass]
-- [straight/N,    asphalt,       straight/N,    grass,         grass,         grass,         grass,         grass]
-- [straight/N,    asphalt,       straight/N,    grass,         grass,         curve_right/N, straight/W,    curve_left/N]
-- [straight/N,    asphalt,       curve_right/W, straight/W,    straight/W,    curve_left/E,  asphalt,       straight/N]
-- [straight/N,    asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       straight/N]
-- [curve_right/W, straight/W,    straight/W,    straight/W,    straight/W,    straight/W,    straight/W,    curve_left/E]
+- [asphalt,       asphalt,       asphalt,       curve_right/N, straight/W,    straight/W,    curve_left/N,  grass]
+- [curve_right/N, straight/W,    straight/W,    curve_left/E,  asphalt,       asphalt,       straight/N,    grass]
+- [straight/N,    grass,         grass,         grass,         asphalt,       asphalt,       straight/N,    grass]
+- [curve_right/W, straight/W,    straight/W,    curve_left/N,  asphalt,       asphalt,       curve_right/W, curve_left/N]
+- [asphalt,       asphalt,       asphalt,       curve_right/W, straight/W,    curve_left/N,  asphalt,       straight/N]
+- [asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       curve_right/W, straight/W,    curve_left/E]
+- [asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt]
 
 
 objects:
 
 - kind: tree
-  pos: [4.01, 3.87]
-  rotate: 204.73
+  pos: [7.11, 2.31]
+  rotate: 94.34
   height: 0.25
 
-- kind: building
-  pos: [6.55, 1.1]
-  rotate: 270
-  height: 0.6
+- kind: sign_pedestrian
+  pos: [7.97, 0.29]
+  rotate: 150.15
+  height: 0.18
 
-- kind: cone
-  pos: [1.6600000000000001, 2.56]
-  rotate: 325.08
+- kind: sign_do_not_enter
+  pos: [5.58, 6.64]
+  rotate: 139.07
+  height: 0.18
+
+- kind: barrier
+  pos: [2.67, 4.92]
+  rotate: 218.84
   height: 0.08
 
-- kind: tree
-  pos: [3.66, 1.32]
-  rotate: 169.39
-  height: 0.25
-
-- kind: tree
-  pos: [4.24, 2.67]
-  rotate: 148.95
-  height: 0.25
-
-- kind: building
-  pos: [2.83, 0.43000000000000005]
-  rotate: 90
-  height: 0.6
-
-- kind: house
-  pos: [5.4, 2.3200000000000003]
-  rotate: 0
-  height: 0.5
-
-- kind: bus
-  pos: [0.25, 4.38]
-  rotate: 270
+- kind: sign_pedestrian
+  pos: [4.18, 1.41]
+  rotate: 184.21
   height: 0.18
 
-- kind: sign_do_not_enter
-  pos: [7, 4]
-  rotate: 90.0
-  height: 0.18
-
-- kind: sign_do_not_enter
-  pos: [8.0, 4.0]
+- kind: sign_yield
+  pos: [4, 4]
   rotate: 270.0
   height: 0.18
 
-- kind: sign_t_light_ahead
-  pos: [1, 2]
+- kind: sign_yield
+  pos: [3.0, 4.0]
+  rotate: 90.0
+  height: 0.18
+
+- kind: sign_yield
+  pos: [4, 1]
   rotate: 180.0
   height: 0.18
 
-- kind: sign_t_light_ahead
-  pos: [1.0, 1.0]
+- kind: sign_yield
+  pos: [4.0, 0.0]
   rotate: 0.0
   height: 0.18
 
-- kind: cone
-  pos: [0.9299999999999999, 6.75]
-  rotate: 293.63
-  height: 0.08
-
-- kind: cone
-  pos: [5.57, 4.48]
-  rotate: 359.82
-  height: 0.08
-
-- kind: sign_t_light_ahead
-  pos: [2, 2]
-  rotate: 180.0
+- kind: sign_do_not_enter
+  pos: [6, 5]
+  rotate: 270.0
   height: 0.18
 
-- kind: sign_t_light_ahead
-  pos: [2.0, 1.0]
-  rotate: 0.0
+- kind: sign_do_not_enter
+  pos: [5.0, 5.0]
+  rotate: 90.0
   height: 0.18
 
 - kind: duckie
-  pos: [7.03, 2.04]
-  rotate: 271.87
-  height: 0.0344
-
-- kind: duckie
-  pos: [3.32, 2.32]
-  rotate: 89.21
-  height: 0.0398
-
+  pos: [5.8, 3.09]
+  rotate: 33.21
+  height: 0.0363
 
 tile_size: 0.585
 
