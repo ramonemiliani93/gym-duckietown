@@ -1,8 +1,8 @@
 # learner's parametrization
-from ..uncertainty_models import MonteCarloSqueezenet
+from ..uncertainty_models import MonteCarloDronet
 
-PARAMETRIZATIONS_NAMES = ['montecarlo_squeezenet']
-PARAMETRIZATIONS = [MonteCarloSqueezenet]
+PARAMETRIZATIONS_NAMES = ['montecarlo_dronet']
+PARAMETRIZATIONS = [MonteCarloDronet]
 
 
 def parametrization(iteration, extra_parameters=None):
