@@ -27,7 +27,7 @@ class DAgger(InteractiveImitationLearning):
             return self.teacher
         if self.active_policy:
             # check for convergence if we are using the teacher to move back to our learner
-            if abs(lp.dist) < self.convergence_distance or abs(lp.angle_rad) < self.convergence_angle:
+            if abs(lp.dist) < self.convergence_distance:
                 return self.learner
         else:
             # in case we are using our learner and it started to diverge a lot we need to give 
