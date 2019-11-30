@@ -20,23 +20,12 @@ class MonteCarloSqueezenet(nn.Module):
         
         self.model = models.squeezenet1_1(pretrained=True)
         # removing some high level features not needed in this context
-        self.model.features = nn.Sequential(*list(self.model.features.children())[:9])
-        # we have 256 output channels
-        self.velocity_branch = nn.Sequential(
-            nn.Dropout(p=self.p),
-            nn.Conv2d(256, 128, kernel_size=3, stride=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(128, 32, kernel_size=3, stride=1)
-        )
-
-        self.omega_branch = nn.Sequential(
-            nn.Dropout(p=self.p),
-            nn.Conv2d(256, 128, kernel_size=3, stride=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(128, 32, kernel_size=3, stride=1)
-        )
+        self.model.features = nn.Sequential(*list(self.model.features.children())[:6])
         final_conv = nn.Conv2d(32, self.num_outputs, kernel_size=1, stride=1)
-        self.classifier = nn.Sequential(
+        self.model.classifier = nn.Sequential(
+            nn.Dropout(p=self.p),
+            nn.Conv2d(128, 64, kernel_size=3, stride=1),
+            nn.ReLU(inplace=True),
             nn.Conv2d(64, 32, kernel_size=3, stride=1),
             nn.Dropout(p=self.p),
             final_conv,
@@ -44,30 +33,24 @@ class MonteCarloSqueezenet(nn.Module):
         )
         self.model.num_classes = self.num_outputs
         self.episode = 0
-        self.n_epochs = 0 
+        self.n_epochs = 0
+        self.fixed_velocity = 0.65 #TODO add to params space
         self.freeze_pretrained_modules()
-        self.init_weights(final_conv)
-        self.max_speed = 0.8
-        self.min_speed = 0.35
+        #self.criterion = SmoothL1Loss(reduction='mean')
 
-    def init_weights(self, final_conv):
-        for subbranch in [self.velocity_branch, self.omega_branch, self.classifier]:
-            for m in subbranch.modules():
-                if isinstance(m, nn.Conv2d):
-                    if m is final_conv:
-                        init.normal_(m.weight, mean=0.0, std=0.01)
-                    else:
-                        init.kaiming_uniform_(m.weight)
-                    if m.bias is not None:
-                        init.constant_(m.bias, 0)
+        for m in self.model.classifier.modules():
+            if isinstance(m, nn.Conv2d):
+                if m is final_conv:
+                    init.normal_(m.weight, mean=0.0, std=0.01)
+                else:
+                    init.kaiming_uniform_(m.weight)
+                if m.bias is not None:
+                    init.constant_(m.bias, 0)
+
+        #TODO add auto tune paramter for the first episode
 
     def forward(self, images):
-        features_extracted = self.model.features(images) 
-        v_feats = self.velocity_branch(features_extracted) 
-        omega_feats = self.omega_branch(features_extracted)
-        # late_fusion
-        feats = torch.cat((v_feats, omega_feats),1)
-        output = self.classifier(feats)
+        output = self.model(images)
         return output
     
     def freeze_pretrained_modules(self):
@@ -95,7 +78,7 @@ class MonteCarloSqueezenet(nn.Module):
 
     def predict(self, *args):
         images = args[0]
-        output = self.forward(images)
+        output = self.model(images)
         if self.num_outputs==1:
             # in case of only predicting omega
             v_tensor = torch.tensor([self.fixed_velocity],dtype = output.dtype).to(self._device)
