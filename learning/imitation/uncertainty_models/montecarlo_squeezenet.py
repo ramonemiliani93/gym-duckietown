@@ -37,6 +37,10 @@ class MonteCarloSqueezenet(nn.Module):
         self.fixed_velocity = 0.65 #TODO add to params space
         self.freeze_pretrained_modules()
         #self.criterion = SmoothL1Loss(reduction='mean')
+        self.max_speed = torch.tensor(0.7).to(self._device)
+        self.min_speed = torch.tensor(0.3).to(self._device)
+        self.speed_threshold = (self.max_speed + self.min_speed ) / 2
+        self.speed_selection_threshold = 0.6
 
         for m in self.model.classifier.modules():
             if isinstance(m, nn.Conv2d):
@@ -72,7 +76,11 @@ class MonteCarloSqueezenet(nn.Module):
         if self.num_outputs==1:
             loss = F.mse_loss(prediction,target[:,-1].reshape(-1,1), reduction='mean')
         else:
-            loss = F.mse_loss(prediction,target, reduction='mean')
+            criterion_v = nn.BCEWithLogitsLoss()
+            is_slowing_down = (target[:,0]> self.speed_threshold).float()  # 1 for expert speeding up and 0 for slowing down for a corner or an incoming duckbot
+            loss_omega = F.mse_loss(prediction[:,1], target[:,1], reduction='mean')
+            loss_v = criterion_v(prediction[:,0], is_slowing_down)
+            loss = loss_v + loss_omega
         return loss
     
 
@@ -84,6 +92,10 @@ class MonteCarloSqueezenet(nn.Module):
             v_tensor = torch.tensor([self.fixed_velocity],dtype = output.dtype).to(self._device)
             v_tensor = torch.cat(output.shape[0]*[v_tensor]).unsqueeze(0)
             output = torch.cat((v_tensor, output), 1)
+        # post processing v values to its max and min counterparts
+        v_tensor = torch.sigmoid(output[:,0])
+        v_tensor = torch.where(v_tensor>self.speed_selection_threshold, self.max_speed, self.min_speed ).unsqueeze(0)
+        output = torch.cat((v_tensor, output[:,1].unsqueeze(0)), 1)
         return output
 
     def predict_with_uncertainty(self, *args):
