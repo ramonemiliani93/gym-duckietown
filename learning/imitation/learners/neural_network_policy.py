@@ -52,6 +52,10 @@ class NeuralNetworkPolicy(BaseLearner):
         # Retrieve data loader
         dataloader = self._get_dataloader(observations, expert_actions)
         print('Starting episode #',str(episode))
+        if episode == 16:
+            # the learner starter to gain an understanding 
+            # now unfreezing all its params
+            self.model.unfreeze_pretrained()
         # Train model
         for epoch in tqdm(range(1, self.epochs + 1)):
             running_loss = 0.0
