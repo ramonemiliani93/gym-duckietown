@@ -167,6 +167,7 @@ class Simulator(gym.Env):
             dynamics_rand=False,
             camera_rand=False,
             randomize_maps_on_reset=False,
+            randomize_map_parent_dir=''
     ):
         """
 
@@ -320,7 +321,10 @@ class Simulator(gym.Env):
 
         if self.randomize_maps_on_reset:
             import os
-            maps_path = get_subdir_path('maps')
+            relative_map_path = 'maps'
+            if randomize_map_parent_dir is not None or randomize_map_parent_dir != '':
+                relative_map_path = os.path.join(relative_map_path,randomize_map_parent_dir)
+            maps_path = get_subdir_path(relative_map_path)
             self.map_names = os.listdir(maps_path)
             self.map_names = [mapfile.replace('.yaml', '') for mapfile in self.map_names]
 
