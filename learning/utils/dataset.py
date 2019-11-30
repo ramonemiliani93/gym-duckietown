@@ -81,6 +81,9 @@ class MemoryMapDataset(Dataset):
         # Initialize number of saved records to zero
         self.length = 0
 
+        # keep track of real length in case of bypassing size value
+        self.real_length =0
+
     def __getitem__(self, item) -> Tuple[torch.Tensor, torch.Tensor]:
         sample = torch.tensor(self.data[item, ...])
         target = torch.tensor(self.target[item, ...])
@@ -91,10 +94,19 @@ class MemoryMapDataset(Dataset):
         return self.length
 
     def extend(self, observations: List[np.ndarray], actions: List[np.ndarray]):
+
         for index, (observation, action) in enumerate(zip(observations, actions)):
-            self.data[self.length + index, ...] = observation.astype(np.float32)
-            self.target[self.length + index, ...] = action.astype(np.float32)
-        self.length += len(observations)
+            current_data_indx = self.real_length + index
+            if self.real_length + index >= self.size:
+                # it will be a circular by getting rid of old experiments
+                current_data_indx %= self.size 
+            self.data[current_data_indx, ...] = observation.astype(np.float32)
+            self.target[current_data_indx, ...] = action.astype(np.float32)
+        if self.real_length >= self.size:    
+            self.length = self.size - 1
+        else:
+            self.length += len(observations)
+        self.real_length += len(observations)
 
     def save(self):
         # TODO
