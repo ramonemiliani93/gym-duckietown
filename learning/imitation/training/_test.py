@@ -12,16 +12,17 @@ from ..training._settings import *
 def test(config, entry):
     policy_parametrization = parametrization(
         iteration=config.parametrization,
-        extra_parameters={'samples': 25, 'dropout': 0.9}
+        extra_parameters={'samples': 1, 'dropout': 0.9, 'num_outputs': 2}
     )
 
     learner = NeuralNetworkPolicy(
         model=policy_parametrization,
         optimizer=None,
         storage_location=None,
-        batch_size=32,
+        batch_size=16,
         epochs=50,
-        model_path='/Users/ramon/Documents/udem/2-year/fall/gym-duckietown/icra2019/dagger/0/h1024e8/pure_pursuit_montecarlo_resnet/adam_lr_[0.001]/decay_0.5/model.pt'
+        model_path='model_path',
+        input_shape = (120,160)
     )
 
     return InteractiveImitationTesting(
