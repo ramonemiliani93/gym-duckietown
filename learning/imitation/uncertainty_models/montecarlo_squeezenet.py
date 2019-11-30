@@ -41,6 +41,7 @@ class MonteCarloSqueezenet(nn.Module):
         self.min_speed = torch.tensor(0.3).to(self._device)
         self.speed_threshold = (self.max_speed + self.min_speed ) / 2
         self.speed_selection_threshold = 0.6
+        self.epoch=0
 
         for m in self.model.classifier.modules():
             if isinstance(m, nn.Conv2d):
