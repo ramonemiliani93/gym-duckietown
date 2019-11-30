@@ -36,13 +36,13 @@ teacher_name = 'pure_pursuit'
 
 # Task Configuration
 HORIZONS = [128, 512, 512, 1024, 2048]
-EPISODES = [64, 32, 16, 8, 8]
+EPISODES = [1000, 32, 16, 8, 8]
 # decays
 MIXING_DECAYS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 # uncertainty threshold
 UNCERTAINTY_THRESHOLDS = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
 ITERATIONS = 4  # to 4
-SUBMISSION_DIRECTORY = 'icra2019'
+SUBMISSION_DIRECTORY = 'dt2019'
 
 
 def experimental_entry(algorithm, experiment_iteration, parametrization_name, horizon, episodes,
@@ -111,10 +111,10 @@ def process_args():
 
     parser.add_argument('--algorithm', '-a', default=1, type=int)
     parser.add_argument('--iteration', '-i', default=0, type=int)
-    parser.add_argument('--horizon', '-r', default=1, type=int)
+    parser.add_argument('--horizon', '-r', default=0, type=int)
     parser.add_argument('--parametrization', '-p', default=0, type=int)
     parser.add_argument('--optimization', '-o', default=5, type=int)
-    parser.add_argument('--learning-rate', '-l', default=1, type=int)
+    parser.add_argument('--learning-rate', '-l', default=2, type=int)
     parser.add_argument('--metadata', '-m', default=None)
 
     return parser
