@@ -47,7 +47,8 @@ class MonteCarloSqueezenet(nn.Module):
         self.n_epochs = 0 
         self.freeze_pretrained_modules()
         self.init_weights(final_conv)
-        
+        self.max_speed = 0.8
+        self.min_speed = 0.35
 
     def init_weights(self, final_conv):
         for subbranch in [self.velocity_branch, self.omega_branch, self.classifier]:
@@ -88,8 +89,6 @@ class MonteCarloSqueezenet(nn.Module):
         if self.num_outputs==1:
             loss = F.mse_loss(prediction,target[:,-1].reshape(-1,1), reduction='mean')
         else:
-            # custom loss predicting classification class for speed and regression value for omega
-            loss_v = prediction[:,0]
             loss = F.mse_loss(prediction,target, reduction='mean')
         return loss
     
