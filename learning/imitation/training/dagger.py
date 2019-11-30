@@ -110,6 +110,6 @@ if __name__ == '__main__':
         episodes=EPISODES[config.horizon]
     )
 
-    algorithm.train(debug=True)  #DEBUG
+    algorithm.train(debug=False)  #DEBUG
 
     environment.close()
