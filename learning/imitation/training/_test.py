@@ -40,7 +40,7 @@ if __name__ == '__main__':
     config = parser.parse_args()
 
     # training
-    environment = simulation(at=MAP_STARTING_POSES[config.iteration])
+    environment = simulation(at=MAP_STARTING_POSES[config.iteration], is_testing=True)
 
     #
     logging_entry = experimental_entry(
