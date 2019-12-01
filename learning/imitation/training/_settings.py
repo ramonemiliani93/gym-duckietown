@@ -72,7 +72,9 @@ def simulation(at, env=None, reset=True):
         environment = DuckietownEnv(
             domain_rand=True,
             max_steps=math.inf,
-            map_name=MAP_NAME
+            map_name=MAP_NAME,
+            randomize_maps_on_reset=True,
+            randomize_map_parent_dir='lfv'
         )
     else:
         environment = env
