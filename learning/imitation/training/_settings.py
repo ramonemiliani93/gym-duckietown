@@ -76,7 +76,7 @@ def simulation(at, env=None, reset=True, is_testing=False):
                 map_name=MAP_NAME,
                 randomize_maps_on_reset=True,
                 randomize_map_parent_dir='lf',
-                frame_rate=6.29 # simulating subision frame rate
+                frame_rate=6 # simulating subision frame rate
             )
         else:
             environment = DuckietownEnv(
