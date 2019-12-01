@@ -51,15 +51,15 @@ class StanleyLFV:
 
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
-        if velocity_slow_down<1:
-            if velocity_slow_down<0.2:
-                velocity = self.stopping_speed
-            else:
-                velocity = self.min_speed
-        elif projected_angle_difference>0.96:
+
+        if projected_angle_difference>0.96:
             velocity = self.max_speed 
         else:
             velocity = self.min_speed 
+        
+        if velocity_slow_down<1:
+            velocity *= velocity_slow_down
+            print(velocity)
 
         # Add terms to control
         steering_angle += angle

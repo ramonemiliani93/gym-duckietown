@@ -82,8 +82,8 @@ class MonteCarloDronet(nn.Module):
 
         self.max_speed = torch.tensor(0.75).to(self._device)
         self.min_speed = torch.tensor(0.35).to(self._device)
-        self.stop_speed_threshold = torch.tensor(0.1).to(self._device)
-        self.stop_speed = torch.tensor(0,dtype=torch.float)
+        self.stop_speed_threshold = torch.tensor(0.12).to(self._device)
+        self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)
         self.speed_threshold = 0.5
@@ -106,7 +106,7 @@ class MonteCarloDronet(nn.Module):
         corner_detect, collision_detected, omega = self.forward(images) 
         criterion_bce = nn.BCEWithLogitsLoss()
         is_slowing_down = (target[:,0]> self.speed_threshold).float().unsqueeze(1)  # 1 for expert speeding up and 0 for slowing down for a corner or an incoming duckbot
-        is_colliding = (target[:,0]<self.stop_speed).float().unsqueeze(1) # 1 for collision detected and 0 for no collision
+        is_colliding = (target[:,0]<self.stop_speed_threshold).float().unsqueeze(1) # 1 for collision detected and 0 for no collision
         loss_omega = F.mse_loss(omega, target[:,1].unsqueeze(1), reduction='mean')
         loss_corner = criterion_bce(corner_detect, is_slowing_down)
         loss_coll = criterion_bce(collision_detected, is_colliding )
