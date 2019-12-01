@@ -4,9 +4,9 @@ import numpy as np
 from src.gym_duckietown.simulator import AGENT_SAFETY_RAD
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
-GAIN = 1.15
-FOLLOWING_DISTANCE = 0.3
-AGENT_SAFETY_GAIN = 1.
+GAIN = 1.0
+FOLLOWING_DISTANCE = 0.4
+AGENT_SAFETY_GAIN = 1
 
 
 class StanleyLFV:
@@ -16,6 +16,9 @@ class StanleyLFV:
         self.gain = gain
         self.following_distance = following_distance
         self.position_threshold = position_threshold
+        self.max_speed = 0.75
+        self.min_speed = 0.35
+        self.stopping_speed = 0.
 
     def predict(self, observation, metadata):
 
@@ -41,7 +44,6 @@ class StanleyLFV:
                     if collision_penalty > 0 :
                         # this means we are approaching and we need to slow down
                         velocity_slow_down = collision_penalty
-                        print('Slowing down by a factor of {}'.format(velocity_slow_down))
                         break
                 else:
                     pass
@@ -49,7 +51,15 @@ class StanleyLFV:
 
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
-        velocity = abs(self.ref_velocity * projected_angle_difference * velocity_slow_down)
+        if velocity_slow_down<1:
+            if velocity_slow_down<0.2:
+                velocity = self.stopping_speed
+            else:
+                velocity = self.min_speed
+        elif projected_angle_difference>0.96:
+            velocity = self.max_speed 
+        else:
+            velocity = self.min_speed 
 
         # Add terms to control
         steering_angle += angle
