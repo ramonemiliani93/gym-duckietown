@@ -82,7 +82,7 @@ class MonteCarloDronet(nn.Module):
 
         self.max_speed = torch.tensor(0.75).to(self._device)
         self.min_speed = torch.tensor(0.35).to(self._device)
-        self.stop_speed_threshold = torch.tensor(0.12).to(self._device)
+        self.stop_speed_threshold = torch.tensor(0.2).to(self._device)
         self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)

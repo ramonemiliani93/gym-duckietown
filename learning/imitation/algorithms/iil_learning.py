@@ -49,9 +49,7 @@ class InteractiveImitationLearning:
                 try:
                     action = self._act(observation)
                 except Exception as e:
-                    print(e)
-                    # reset env 
-                    #TODO nees to e checked
+                    print('error taking action ', e)
                     self.environment.reset()
                     observation = self.environment.render_obs()
                     action = self._act(observation)

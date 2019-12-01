@@ -59,7 +59,6 @@ class StanleyLFV:
         
         if velocity_slow_down<1:
             velocity *= velocity_slow_down
-            print(velocity)
 
         # Add terms to control
         steering_angle += angle
