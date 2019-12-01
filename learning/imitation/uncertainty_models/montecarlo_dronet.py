@@ -80,10 +80,12 @@ class MonteCarloDronet(nn.Module):
             nn.Linear(self.num_feats_extracted, 1)
         )
 
-        self.max_speed = torch.tensor(0.75)
-        self.min_speed = torch.tensor(0.35)
-        self.stop_speed_threshold = torch.tensor(0.1)
+        self.max_speed = torch.tensor(0.75).to(self._device)
+        self.min_speed = torch.tensor(0.35).to(self._device)
+        self.stop_speed_threshold = torch.tensor(0.1).to(self._device)
         self.stop_speed = torch.tensor(0,dtype=torch.float)
+        self.mask_zero = torch.tensor(0).to(self._device)
+        self.mask_one = torch.tensor(1).to(self._device)
         self.speed_threshold = 0.5
         self.decay = 1/10
         self.alpha = 0
@@ -119,7 +121,7 @@ class MonteCarloDronet(nn.Module):
 
         prob_coll = torch.sigmoid(prob_coll)
         prob_corner = torch.sigmoid(prob_corner)
-        coll_mask = torch.where(prob_coll>0.5 , torch.tensor(0) , torch.tensor(1) )
+        coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )
         v_tensor = (1 - prob_corner) * self.max_speed + (prob_corner * self.min_speed)
         v_tensor[coll_mask==0] = self.stop_speed 
         omega[coll_mask==0] = self.stop_speed
