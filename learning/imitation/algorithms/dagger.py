@@ -21,7 +21,7 @@ class DAgger(InteractiveImitationLearning):
 
     def _on_episode_done(self):
         # decay expert probability after each episode
-        self.alpha = self.p ** self._episode
+        self.alpha = max(self.p ** self._episode, 0.2)
 
         # Clear experience
         self._observations = []
