@@ -75,8 +75,8 @@ class MonteCarloDronet(nn.Module):
             nn.Linear(self.num_feats_extracted, 1)
         )
 
-        self.max_speed = torch.tensor(0.75)
-        self.min_speed = torch.tensor(0.35)
+        self.max_speed = torch.tensor(0.75).to(self._device)
+        self.min_speed = torch.tensor(0.35).to(self._device)
         self.speed_threshold = 0.5
         self.decay = 1/10
         self.alpha = 0
