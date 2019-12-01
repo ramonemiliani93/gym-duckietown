@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import cv2
-
+from PIL import Image
 import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor, Normalize, Compose, Lambda
@@ -11,6 +11,7 @@ from .neural_network_policy import NeuralNetworkPolicy
 from ..uncertainty_models import UncertaintyModel
 from learning.utils.dataset import MemoryMapDataset
 from learning.utils.running_average import RunningAverage
+from learning.utils.model import weight_reset
 
 
 class FeatureExtractor(NeuralNetworkPolicy):
@@ -35,7 +36,7 @@ class FeatureExtractor(NeuralNetworkPolicy):
 
     def _test_transform(self, observations, expert_actions):
         # Resize images
-        observations = [cv2.resize(observation, dsize=self.input_shape[::-1]) for observation in observations]
+        observations = [Image.fromarray(cv2.resize(observation, dsize=self.input_shape[::-1])) for observation in observations]
 
         # Transform to tensors
         compose_obs = Compose([
