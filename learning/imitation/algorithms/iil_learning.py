@@ -1,7 +1,11 @@
+
+from learning.utils.wrappers import MotionBlurWrapper
+
+
 class InteractiveImitationLearning:
     def __init__(self, env, teacher, learner, horizon, episodes):
 
-        self.environment = env
+        self.environment = MotionBlurWrapper(env)
         self.teacher = teacher
         self.learner = learner
 
