@@ -1,8 +1,8 @@
 # learner's parametrization
 from ..uncertainty_models import MonteCarloResnet, IndividualMLP
 
-PARAMETRIZATIONS_NAMES = ['montecarlo_resnet', 'feature']
-PARAMETRIZATIONS = [MonteCarloResnet, IndividualMLP]
+PARAMETRIZATIONS_NAMES = ['feature', 'mc']
+PARAMETRIZATIONS = [IndividualMLP, MonteCarloResnet]
 
 
 def parametrization(iteration, extra_parameters=None):

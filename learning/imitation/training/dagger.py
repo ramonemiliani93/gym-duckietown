@@ -26,32 +26,32 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
         parametrization=policy_parametrization,
         task_metadata=[task_horizon, task_episodes, 1]
     )
-    # learner = RandomExploration(env)
-    learner = NeuralNetworkPolicy(
-        model=policy_parametrization,
-        optimizer=policy_optimizer,
-        storage_location=experimental_entry(
-            algorithm='dagger',
-            experiment_iteration=config.iteration,
-            parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
-            horizon=HORIZONS[config.horizon],
-            episodes=EPISODES[config.horizon],
-            optimization_name='sgd',
-            learning_rate=[1e-6],
-            metadata={
-                'decay': MIXING_DECAYS[config.decay]
-            }
-        ),
-        batch_size=64,
-        epochs=50
-    )
+    learner = RandomExploration(env)
+    # learner = FeatureExtractor(
+    #     model=policy_parametrization,
+    #     optimizer=policy_optimizer,
+    #     storage_location=experimental_entry(
+    #         algorithm='dagger',
+    #         experiment_iteration=config.iteration,
+    #         parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
+    #         horizon=HORIZONS[config.horizon],
+    #         episodes=EPISODES[config.horizon],
+    #         optimization_name='adam',
+    #         learning_rate=[1e-4],
+    #         metadata={
+    #             'decay': MIXING_DECAYS[config.decay]
+    #         }
+    #     ),
+    #     batch_size=64,
+    #     epochs=50
+    # )
 
     return DAgger(env=env,
                   teacher=teacher,
                   learner=learner,
                   horizon=task_horizon,
                   episodes=task_episodes,
-                  alpha=MIXING_DECAYS[selected_mixing_decay]
+                  alpha=1#MIXING_DECAYS[selected_mixing_decay]
                   )
 
 
@@ -88,8 +88,8 @@ if __name__ == '__main__':
         parametrization_name=PARAMETRIZATIONS_NAMES[config.parametrization],
         horizon=HORIZONS[config.horizon],
         episodes=EPISODES[config.horizon],
-        optimization_name='sgd',
-        learning_rate=[1e-6],
+        optimization_name='adam',
+        learning_rate=[1e-4],
         metadata={
             'decay': MIXING_DECAYS[config.decay]
         }

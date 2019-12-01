@@ -15,13 +15,13 @@ def test(config, entry):
         extra_parameters={'samples': 25, 'dropout': 0.9}
     )
 
-    learner = NeuralNetworkPolicy(
+    learner = FeatureExtractor(
         model=policy_parametrization,
         optimizer=None,
         storage_location=None,
         batch_size=32,
         epochs=25,
-        model_path='/Users/ramon/Documents/udem/2-year/fall/gym-duckietown/icra2019/dagger/0/h256e32/pure_pursuit_montecarlo_resnet/sgd_lr_[1e-06]/decay_0.8/model.pt',
+        model_path='/Users/ramon/Documents/udem/2-year/fall/gym-duckietown/icra2019/dagger/0/h256e64/pure_pursuit_feature/adam_lr_[0.0001]/decay_0.8/model.pt',
         no_dataset=True
     )
 
@@ -63,13 +63,13 @@ if __name__ == '__main__':
         routine=testing
     )
 
-    logger = Logger(
-        env=environment,
-        routine=testing,
-        horizon=HORIZONS[config.horizon],
-        episodes=EPISODES[config.horizon],
-        log_file=logging_entry + 'testing.log'
-    )
+    # logger = Logger(
+    #     env=environment,
+    #     routine=testing,
+    #     horizon=HORIZONS[config.horizon],
+    #     episodes=EPISODES[config.horizon],
+    #     log_file=logging_entry + 'testing.log'
+    # )
 
     testing.test(debug=True)
 

@@ -24,7 +24,7 @@ MAP_STARTING_POSES = [
     # [[0.8, 0.0, 2.5], 10.90],
     # [[1.5, 0.0, 3.5], 12.56],
     # [[2.5, 0.0, 3.5], 12.56],
-    [[4.1, 0.0, 2.0], 14.14],
+    [[3.7, 0.0, 1.7], 14.14],
     # [[2.8, 0.0, 0.8], 15.71],
 ]
 
@@ -35,8 +35,8 @@ ALGORITHMS = ['supervised', 'dagger', 'aggrevate', 'dropout_dagger', 'upms', 'up
 teacher_name = 'pure_pursuit'
 
 # Task Configuration
-HORIZONS = [128, 256, 512, 256, 1024, 2048]
-EPISODES = [64, 32, 16, 32, 20, 8]
+HORIZONS = [128, 128, 128, 128, 128, 128]
+EPISODES = [128, 128, 128, 128, 128, 128]
 # decays
 MIXING_DECAYS = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 # uncertainty threshold
@@ -73,7 +73,7 @@ def simulation(at, env=None, reset=True):
     from src.gym_duckietown.envs import DuckietownEnv
     if env is None:
         environment = DuckietownEnv(
-            domain_rand=True,
+            domain_rand=False,
             max_steps=math.inf,
             map_name=MAP_NAME
         )
