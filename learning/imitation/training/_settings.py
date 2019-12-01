@@ -66,16 +66,25 @@ def experimental_entry(algorithm, experiment_iteration, parametrization_name, ho
     return entry
 
 
-def simulation(at, env=None, reset=True):
+def simulation(at, env=None, reset=True, is_testing=False):
     from src.gym_duckietown.envs import DuckietownEnv
     if env is None:
-        environment = DuckietownEnv(
-            domain_rand=True,
-            max_steps=math.inf,
-            map_name=MAP_NAME,
-            randomize_maps_on_reset=True,
-            randomize_map_parent_dir='lfv'
-        )
+        if not(is_testing):
+            environment = DuckietownEnv(
+                domain_rand=True,
+                max_steps=math.inf,
+                map_name=MAP_NAME,
+                randomize_maps_on_reset=True,
+                randomize_map_parent_dir='lfv'
+            )
+        else:
+            environment = DuckietownEnv(
+                domain_rand=False,
+                max_steps=math.inf,
+                map_name=MAP_NAME,
+                randomize_maps_on_reset=False,
+                randomize_map_parent_dir='lfv'
+            ) 
     else:
         environment = env
 
