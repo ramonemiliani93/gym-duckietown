@@ -48,7 +48,7 @@ class InteractiveImitationLearning:
                 self._current_horizon = horizon
                 try:
                     action = self._act(observation)
-                except:
+                except Exception as e:
                     print(e)
                     # reset env 
                     #TODO nees to e checked
