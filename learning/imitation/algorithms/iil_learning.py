@@ -50,9 +50,7 @@ class InteractiveImitationLearning:
                     action = self._act(observation)
                 except Exception as e:
                     print('error taking action ', e)
-                    self.environment.reset()
-                    observation = self.environment.render_obs()
-                    action = self._act(observation)
+                    break
                 try:
                     next_observation, reward, done, info = self.environment.step(action)
                 except Exception as e:
