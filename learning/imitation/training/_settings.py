@@ -74,7 +74,7 @@ def simulation(at, env=None, reset=True):
             max_steps=math.inf,
             map_name=MAP_NAME,
             randomize_maps_on_reset=True,
-            randomize_map_parent_dir='lfv'
+            randomize_map_parent_dir='lf'
         )
     else:
         environment = env
