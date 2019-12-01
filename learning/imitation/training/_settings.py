@@ -69,7 +69,7 @@ def experimental_entry(algorithm, experiment_iteration, parametrization_name, ho
 def simulation(at, env=None, reset=True, is_testing=False):
     from src.gym_duckietown.envs import DuckietownEnv
     if env is None:
-        if is_testing:
+        if not(is_testing):
             environment = DuckietownEnv(
                 domain_rand=True,
                 max_steps=math.inf,
