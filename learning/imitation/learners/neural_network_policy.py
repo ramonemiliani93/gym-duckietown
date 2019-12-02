@@ -92,7 +92,7 @@ class NeuralNetworkPolicy(BaseLearner):
     def save(self):
         torch.save(self.model.state_dict(), self.storage_location + 'model.pt')
         if os.path.isdir('/content/drive'):
-            torch.save(self.model.state_dict(), '/content/drive/My Drive/model_lf_'+str(self.episode)+'.pt')
+            torch.save(self.model.state_dict(), '/content/drive/My Drive/model_lfv_'+str(self.episode)+'.pt')
 
 
     def _transform(self, observations, expert_actions):
