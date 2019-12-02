@@ -21,7 +21,7 @@ def test(config, entry):
         storage_location=None,
         batch_size=16,
         epochs=50,
-        model_path='model_path',
+        model_path=config.model_path,
         input_shape = (120,160)
     )
 
@@ -37,6 +37,7 @@ def test(config, entry):
 if __name__ == '__main__':
     parser = process_args()
     parser.add_argument('--test-horizon', '-th', default=0, type=int)
+    parser.add_argument('--model-path', '-mp', default='', type=str)
     config = parser.parse_args()
 
     # training
