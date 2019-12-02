@@ -110,7 +110,7 @@ class MonteCarloDronet(nn.Module):
         loss_omega = F.mse_loss(omega, target[:,1].unsqueeze(1), reduction='mean')
         loss_corner = criterion_bce(corner_detect, is_slowing_down)
         loss_coll = criterion_bce(collision_detected, is_colliding )
-        loss = loss_omega + (loss_corner + loss_coll) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        loss = loss_omega + (loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) + (loss_coll) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0*1.5))) 
         return loss
     
 
