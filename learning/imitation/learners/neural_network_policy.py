@@ -32,6 +32,8 @@ class NeuralNetworkPolicy(BaseLearner):
         self.batch_size = kwargs.get('batch_size', 32)
         self.input_shape = kwargs.get('input_shape', (60, 80))
 
+        self.episode = 0
+
         # Create dataset
         if storage_location is not None :
             self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
@@ -46,6 +48,7 @@ class NeuralNetworkPolicy(BaseLearner):
         self.writer.close()
 
     def optimize(self, observations, expert_actions, episode):
+        self.episode = episode
         # Transform newly received data
         observations, expert_actions = self._transform(observations, expert_actions)
 
@@ -88,6 +91,9 @@ class NeuralNetworkPolicy(BaseLearner):
 
     def save(self):
         torch.save(self.model.state_dict(), self.storage_location + 'model.pt')
+        if os.path.isdir('/content/drive'):
+            torch.save(self.model.state_dict(), '/content/drive/My Drive/model_lf_'+str(self.episode)+'.pt')
+
 
     def _transform(self, observations, expert_actions):
         # Resize images
