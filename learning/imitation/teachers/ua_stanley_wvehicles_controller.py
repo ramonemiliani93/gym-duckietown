@@ -31,7 +31,10 @@ class StanleyLFV:
 
         steering_angle = 0.
         current_world_objects = self.env.objects
-        lane_pose = self.env.get_lane_pos2(self.env.cur_pos, self.env.cur_angle)
+        try:
+            lane_pose = self.env.get_lane_pos2(self.env.cur_pos, self.env.cur_angle)
+        except:
+            return [0,0], -1
         dist = lane_pose.dist  # Distance to lane center. Left is negative, right is positive.
         angle = lane_pose.angle_rad % (2 * np.pi)
 
@@ -69,15 +72,7 @@ class StanleyLFV:
         action = [velocity, omega]
 
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
-        if position_diff > self.position_threshold:  # or velocity_diff > 0.5:
-            return action, 0.0
-        else:
-            if metadata[0] == 0:
-                return action, 0.0
-            if metadata[1] is None:
-                return action, 0.0
-
-        return None, math.inf
+        return action, 0.0
 
     def _get_projected_angle_difference(self):
         # Find the projection along the path

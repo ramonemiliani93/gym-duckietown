@@ -20,6 +20,8 @@ class DAgger(InteractiveImitationLearning):
             a=[self.teacher, self.learner],
             p=[self.alpha, 1. - self.alpha]
         )
+        if self._found_obstacle:
+            return self.teacher
         try:
             lp = self.environment.get_lane_pos2(self.environment.cur_pos, self.environment.cur_angle)
         except :
@@ -27,7 +29,7 @@ class DAgger(InteractiveImitationLearning):
             return self.teacher
         if self.active_policy:
             # check for convergence if we are using the teacher to move back to our learner
-            if abs(lp.dist) < self.convergence_distance:
+            if abs(lp.dist) < self.convergence_distance  :
                 return self.learner
         else:
             # in case we are using our learner and it started to diverge a lot we need to give 

@@ -21,6 +21,7 @@ class InteractiveImitationLearning:
         self.teacher_uncertainty = None
         self.teacher_action = None
         self.active_policy = True  # if teacher is active
+        self._found_obstacle = False
 
         # internal count
         self._current_horizon = 0
@@ -46,15 +47,12 @@ class InteractiveImitationLearning:
         for sample in range(samples):  # number of T-step trajectories
             for horizon in range(self._horizon):
                 self._current_horizon = horizon
-                try:
-                    action = self._act(observation)
-                except Exception as e:
-                    print('error taking action ', e)
-                    break
+                action = self._act(observation)
                 try:
                     next_observation, reward, done, info = self.environment.step(action)
                 except Exception as e:
                     print(e)
+                    continue
                 if self._debug:
                     self.environment.render()
                 self._on_step_done(observation, action, reward, done, info)
@@ -101,6 +99,11 @@ class InteractiveImitationLearning:
             self.teacher_queried = False
         else:
             self.teacher_queried = False
+
+        if self.teacher_action[0] < 0.1:
+            self._found_obstacle = True
+        else:
+            self._found_obstacle = False
 
     def _mix(self):
         raise NotImplementedError()
