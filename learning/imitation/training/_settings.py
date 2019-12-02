@@ -18,7 +18,7 @@ else:
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-MAP_NAME = 'udem1' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
+MAP_NAME = 'basic' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
 MAP_STARTING_POSES = [
     [[0.8, 0.0, 1.5], 10.90],
     [[0.8, 0.0, 2.5], 10.90],
@@ -83,7 +83,7 @@ def simulation(at, env=None, reset=True, is_testing=False):
                 domain_rand=False,
                 max_steps=math.inf,
                 map_name=MAP_NAME,
-                randomize_maps_on_reset=False,
+                randomize_maps_on_reset=True,
                 randomize_map_parent_dir='lf'
             )
     else:
