@@ -77,6 +77,7 @@ def simulation(at, env=None, reset=True, is_testing=False):
                 randomize_maps_on_reset=True,
                 randomize_map_parent_dir='lf'
             )
+            environment.randomize_maps_on_reset = False # to re-enable it just after n-episodes
         else:
             environment = DuckietownEnv(
                 domain_rand=False,
