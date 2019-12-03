@@ -80,13 +80,15 @@ class MonteCarloDronet(nn.Module):
             nn.Linear(self.num_feats_extracted, 1)
         )
 
-        self.max_speed = torch.tensor(0.75).to(self._device)
-        self.min_speed = torch.tensor(0.35).to(self._device)
+        self.max_speed = 0.75
+        self.min_speed = 0.35
+        self.max_speed_tensor = torch.tensor(0.75).to(self._device)
+        self.min_speed_tensor = torch.tensor(0.35).to(self._device)
         self.stop_speed_threshold = torch.tensor(0.2).to(self._device)
         self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)
-        self.speed_threshold = 0.5
+        self.speed_threshold = (self.max_speed + self.min_speed)/2
         self.decay = 1/10
         self.alpha = 0
         self.epoch_0 = 10
@@ -110,7 +112,7 @@ class MonteCarloDronet(nn.Module):
         loss_omega = F.mse_loss(omega, target[:,1].unsqueeze(1), reduction='mean')
         loss_corner = criterion_bce(corner_detect, is_slowing_down)
         loss_coll = criterion_bce(collision_detected, is_colliding )
-        loss = loss_omega + (loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) + (loss_coll) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0*1.25))) 
+        loss = loss_omega + (loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) + (loss_coll) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) 
         return loss
     
 
@@ -122,7 +124,7 @@ class MonteCarloDronet(nn.Module):
         prob_coll = torch.sigmoid(prob_coll)
         prob_corner = torch.sigmoid(prob_corner)
         coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )
-        v_tensor = torch.where(prob_corner>0.5, self.max_speed, self.min_speed)
+        v_tensor = torch.where(prob_corner>0.5, self.max_speed_tensor, self.min_speed_tensor)
         v_tensor[coll_mask==0] = self.stop_speed 
         omega[coll_mask==0] = self.stop_speed
         output = torch.cat((v_tensor , omega ), 1)
