@@ -3,7 +3,7 @@ import math
 import numpy as np
 from src.gym_duckietown.simulator import AGENT_SAFETY_RAD
 POSITION_THRESHOLD = 0.04
-REF_VELOCITY = 0.8
+REF_VELOCITY = 0.4
 GAIN = 1.15
 FOLLOWING_DISTANCE = 0.3
 AGENT_SAFETY_GAIN = 1.
@@ -48,8 +48,8 @@ class StanleyLFV:
 
 
         # Project to curve to find curvature
-        projected_angle_difference, closest_point = self._get_projected_angle_difference()
-        velocity = abs(self.ref_velocity * projected_angle_difference * velocity_slow_down)
+        _, closest_point = self._get_projected_angle_difference()
+        velocity = self.ref_velocity
 
         # Add terms to control
         steering_angle += angle
@@ -57,6 +57,7 @@ class StanleyLFV:
 
         # Translate to angular speed
         omega = velocity * np.sin(steering_angle) * 25 # v sin(theta) / r
+        velocity *= velocity_slow_down
         action = [velocity, omega]
 
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)

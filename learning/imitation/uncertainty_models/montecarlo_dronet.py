@@ -71,15 +71,13 @@ class MonteCarloDronet(nn.Module):
         )
 
         # Collision / Corner detected channel
-        self.col_corner =nn.Sequential(
+        self.is_collision =nn.Sequential(
             nn.Linear(self.num_feats_extracted, 1)
         )
-        self.max_speed = 0.38
-        self.min_speed = 0.18
+        self.max_speed = 0.4
 
         self.max_speed_tensor = torch.tensor(self.max_speed).to(self._device)
-        self.min_speed_tensor = torch.tensor(self.min_speed).to(self._device)
-        self.speed_threshold = (self.max_speed + self.min_speed) / 2
+        self.stop_speed_tenosr =  torch.tensor(0.0).to(self._device)
         self.decay = 1/10
         self.alpha = 0
         self.epoch_0 = 10
@@ -88,28 +86,28 @@ class MonteCarloDronet(nn.Module):
     def forward(self, images):
         features = self.feature_extractor(images)
         omega = self.omega_channel(features)
-        corner_detect = self.col_corner(features)
-        return corner_detect, omega
+        collision_detected = self.is_collision(features)
+        return collision_detected, omega
     
 
     def loss(self, *args):
         self.train()
         images, target = args
-        corner_detect, omega = self.forward(images) 
+        collision_detected, omega = self.forward(images) 
         criterion_v = nn.BCEWithLogitsLoss()
-        is_slowing_down = (target[:,0]> self.speed_threshold).float().unsqueeze(1)  # 1 for expert speeding up and 0 for slowing down for a corner or an incoming duckbot
+        is_colliding = (target[:,0]< 0.12).float().unsqueeze(1)  # 1 for expert speeding up and 0 for slowing down for a corner or an incoming duckbot
         loss_omega = F.mse_loss(omega, target[:,1].unsqueeze(1), reduction='mean')
-        loss_v = criterion_v(corner_detect, is_slowing_down)
-        loss = loss_omega + loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        loss_collision = criterion_v(collision_detected, is_colliding)
+        loss = loss_omega + loss_collision * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
     
 
     def predict(self, *args):
         images = args[0]
-        prob_corner, omega = self.forward(images)
+        prob_collision, omega = self.forward(images)
         # post processing v values to its max and min counterparts
-        prob_corner = torch.sigmoid(prob_corner) 
-        v_tensor = v_tensor = torch.where(prob_corner>0.5, self.max_speed_tensor, self.min_speed_tensor )
+        prob_collision = torch.sigmoid(prob_collision) 
+        v_tensor =torch.where(prob_collision>0.5, self.stop_speed_tenosr, self.max_speed_tensor )
         output = torch.cat((v_tensor, omega), 1)
         return output
 

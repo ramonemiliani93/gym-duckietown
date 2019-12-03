@@ -18,7 +18,7 @@ else:
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-MAP_NAME = 'basic' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
+MAP_NAME = 'udem_v' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
 MAP_STARTING_POSES = [
     [[0.8, 0.0, 1.5], 10.90],
     [[0.8, 0.0, 2.5], 10.90],
@@ -74,17 +74,15 @@ def simulation(at, env=None, reset=True, is_testing=False):
                 domain_rand=True,
                 max_steps=math.inf,
                 map_name=MAP_NAME,
-                randomize_maps_on_reset=True,
-                randomize_map_parent_dir='lf'
+                randomize_maps_on_reset=False
             )
-            environment.randomize_maps_on_reset = False # to re-enable it just after n-episodes
         else:
             environment = DuckietownEnv(
                 domain_rand=False,
                 max_steps=math.inf,
                 map_name=MAP_NAME,
                 randomize_maps_on_reset=True,
-                randomize_map_parent_dir='lf'
+                randomize_map_parent_dir='lfv'
             )
     else:
         environment = env
@@ -109,7 +107,7 @@ def robot():
 #     )
 
 def teacher(env):
-    return Stanley(
+    return StanleyLFV(
         env=env
     )
 
