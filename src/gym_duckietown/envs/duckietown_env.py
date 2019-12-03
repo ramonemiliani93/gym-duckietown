@@ -45,7 +45,7 @@ class DuckietownEnv(Simulator):
         self.limit = limit
 
         # Motion blur
-        self.motion_blur = kwargs.get('motion_blur',True)
+        self.motion_blur = False#kwargs.get('motion_blur',True)
         if self.motion_blur:
             self.frame_skip = 3
             self.delta_time = self.delta_time / self.frame_skip

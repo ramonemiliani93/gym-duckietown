@@ -36,7 +36,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
         # Create dataset
         if storage_location is not None :
-            self.dataset = MemoryMapDataset(250000, (3, *self.input_shape), (2,), storage_location)
+            self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
         else:
             self.dataset = None
         # Load previous weights
@@ -106,6 +106,11 @@ class NeuralNetworkPolicy(BaseLearner):
         ])
         
         observations = [compose_obs(observation).numpy() for observation in observations]
+        try:
+            expert_actions = [np.array([expert_action[0], np.tanh(expert_action[1])]) for expert_action in expert_actions]
+        except:
+            # at the start the teacher is sending just [[0]]
+            pass
         expert_actions = [torch.tensor(expert_action).numpy() for expert_action in expert_actions]
 
         return observations, expert_actions

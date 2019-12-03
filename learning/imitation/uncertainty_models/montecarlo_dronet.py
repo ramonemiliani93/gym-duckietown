@@ -74,8 +74,8 @@ class MonteCarloDronet(nn.Module):
         self.col_corner =nn.Sequential(
             nn.Linear(self.num_feats_extracted, 1)
         )
-        self.max_speed = 0.38
-        self.min_speed = 0.18
+        self.max_speed = 0.75
+        self.min_speed = 0.35
 
         self.max_speed_tensor = torch.tensor(self.max_speed).to(self._device)
         self.min_speed_tensor = torch.tensor(self.min_speed).to(self._device)
@@ -97,10 +97,10 @@ class MonteCarloDronet(nn.Module):
         images, target = args
         corner_detect, omega = self.forward(images) 
         criterion_v = nn.BCEWithLogitsLoss()
-        is_slowing_down = (target[:,0]> self.speed_threshold).float().unsqueeze(1)  # 1 for expert speeding up and 0 for slowing down for a corner or an incoming duckbot
+        is_corner = (target[:,0] < self.speed_threshold).float().unsqueeze(1)  # 0 for expert speeding up and 1 for slowing down for a corner or an incoming duckbot
         loss_omega = F.mse_loss(omega, target[:,1].unsqueeze(1), reduction='mean')
-        loss_v = criterion_v(corner_detect, is_slowing_down)
-        loss = loss_omega + loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        loss_corner = criterion_v(corner_detect, is_corner)
+        loss = loss_omega + loss_corner * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
     
 
@@ -109,7 +109,8 @@ class MonteCarloDronet(nn.Module):
         prob_corner, omega = self.forward(images)
         # post processing v values to its max and min counterparts
         prob_corner = torch.sigmoid(prob_corner) 
-        v_tensor = v_tensor = torch.where(prob_corner>0.5, self.max_speed_tensor, self.min_speed_tensor )
+        v_tensor  = torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )
+        omega = torch.atan(omega)
         output = torch.cat((v_tensor, omega), 1)
         return output
 

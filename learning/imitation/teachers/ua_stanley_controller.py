@@ -15,8 +15,8 @@ class Stanley:
         self.gain = gain
         self.following_distance = following_distance
         self.position_threshold = position_threshold
-        self.max_speed = 0.38
-        self.min_speed = 0.18
+        self.max_speed = 0.75
+        self.min_speed = 0.35
 
     def predict(self, observation, metadata):
 
