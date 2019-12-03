@@ -142,7 +142,9 @@ class DuckiebotObj(WorldObj):
 
         # Find the curve point closest to the agent, and the tangent at that point
         closest_point, closest_tangent = closest_curve_point(self.pos, self.angle)
-
+        if closest_point is None:
+            self._update_pos([self.velocity, 0], delta_time)
+            return
         iterations = 0
 
         lookup_distance = self.follow_dist

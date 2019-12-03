@@ -71,7 +71,6 @@ class StanleyLFV:
         omega = velocity * np.sin(steering_angle) * 25 # v sin(theta) / r
         action = [velocity, omega]
 
-        position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
         return action, 0.0
 
     def _get_projected_angle_difference(self):

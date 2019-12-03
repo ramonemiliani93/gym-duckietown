@@ -52,7 +52,6 @@ class InteractiveImitationLearning:
                     next_observation, reward, done, info = self.environment.step(action)
                 except Exception as e:
                     print(e)
-                    continue
                 if self._debug:
                     self.environment.render()
                 self._on_step_done(observation, action, reward, done, info)
@@ -124,7 +123,7 @@ class InteractiveImitationLearning:
         self._episode_done_listeners.append(listener)
 
     def _on_episode_done(self):
-        if self._episode>15:
+        if self._episode>100:
             self.environment.randomize_maps_on_reset = True
         else:
             self.environment.randomize_maps_on_reset = False
