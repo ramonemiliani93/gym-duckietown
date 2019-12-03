@@ -122,13 +122,10 @@ class MonteCarloDronet(nn.Module):
         prob_coll = torch.sigmoid(prob_coll)
         prob_corner = torch.sigmoid(prob_corner)
         coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )
-        #v_tensor = (1 - prob_corner) * self.max_speed + (prob_corner * self.min_speed)
         v_tensor = torch.where(prob_corner>0.5, self.max_speed, self.min_speed)
         v_tensor[coll_mask==0] = self.stop_speed 
         omega[coll_mask==0] = self.stop_speed
         output = torch.cat((v_tensor , omega ), 1)
-        if  prob_coll >0.1:
-            print(prob_coll)
         return output
 
     def predict_with_uncertainty(self, *args):

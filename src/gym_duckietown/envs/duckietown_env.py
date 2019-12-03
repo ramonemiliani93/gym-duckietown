@@ -5,7 +5,6 @@ from gym import spaces
 from ..simulator import Simulator
 from .. import logger
 
-
 class DuckietownEnv(Simulator):
     """
     Wrapper to control the simulator using velocity and steering angle
@@ -45,6 +44,35 @@ class DuckietownEnv(Simulator):
         # Wheel velocity limit
         self.limit = limit
 
+        # Motion blur
+        self.motion_blur = kwargs.get('motion_blur',True)
+        if self.motion_blur:
+            self.frame_skip = 3
+            self.delta_time = self.delta_time / self.frame_skip
+    
+    def step_motion_blur(self, action: np.ndarray):
+        action = np.clip(action, -1, 1)
+        # Actions could be a Python list
+        action = np.array(action)
+        motion_blur_window = []
+        for _ in range(self.frame_skip):
+            obs = self.render_obs()
+            motion_blur_window.append(obs)
+            self.update_physics(action)
+
+        # Generate the current camera image
+
+        obs = self.render_obs()
+        motion_blur_window.append(obs)
+        obs = np.average(motion_blur_window, axis=0, weights=[0.8, 0.15, 0.04, 0.01]).astype(np.uint8)
+
+        misc = self.get_agent_info()
+
+        d = self._compute_done_reward()
+        misc['Simulator']['msg'] = d.done_why
+
+        return obs, d.reward, d.done, misc
+
     def step(self, action):
         vel, angle = action
 
@@ -71,8 +99,10 @@ class DuckietownEnv(Simulator):
         u_l_limited = max(min(u_l, self.limit), -self.limit)
 
         vels = np.array([u_l_limited, u_r_limited])
-
-        obs, reward, done, info = Simulator.step(self, vels)
+        if self.motion_blur:
+            obs, reward, done, info = self.step_motion_blur( vels) 
+        else:
+            obs, reward, done, info = Simulator.step( self, vels) 
         mine = {}
         mine['k'] = self.k
         mine['gain'] = self.gain

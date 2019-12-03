@@ -749,9 +749,9 @@ class Simulator(gym.Env):
             possible_tiles = find_candidate_tiles(obj.obj_corners, self.road_tile_size)
 
             # If the object intersects with a drivable tile
-            if static and kind != "trafficlight" and self._collidable_object(
+            if not static or (static and kind != "trafficlight" and self._collidable_object(
                     obj.obj_corners, obj.obj_norm, possible_tiles
-            ):
+            )):
                 self.collidable_centers.append(pos)
                 self.collidable_corners.append(obj.obj_corners.T)
                 self.collidable_norms.append(obj.obj_norm)
@@ -1091,7 +1091,6 @@ class Simulator(gym.Env):
         t = bezier_closest(cps, pos)
         point = bezier_point(cps, t)
         tangent = bezier_tangent(cps, t)
-
         return point, tangent
 
     def get_lane_pos2(self, pos, angle):
