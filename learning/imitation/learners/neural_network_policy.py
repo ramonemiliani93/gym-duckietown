@@ -36,7 +36,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
         # Create dataset
         if storage_location is not None :
-            self.dataset = MemoryMapDataset(100000, (3, *self.input_shape), (2,), storage_location)
+            self.dataset = MemoryMapDataset(250000, (3, *self.input_shape), (2,), storage_location)
         else:
             self.dataset = None
         # Load previous weights
