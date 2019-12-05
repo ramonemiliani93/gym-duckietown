@@ -4,8 +4,8 @@ import numpy as np
 from src.gym_duckietown.simulator import NotInLane
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
-GAIN = 1.0
-FOLLOWING_DISTANCE = 0.4
+GAIN = 1.5
+FOLLOWING_DISTANCE = 0.35
 
 
 class Stanley:
@@ -15,8 +15,8 @@ class Stanley:
         self.gain = gain
         self.following_distance = following_distance
         self.position_threshold = position_threshold
-        self.max_speed = 0.75
-        self.min_speed = 0.35
+        self.max_speed = 0.8
+        self.min_speed = 0.25
 
     def predict(self, observation, metadata):
 
@@ -34,22 +34,23 @@ class Stanley:
             self.env.reset()
             lane_pose = self.env.get_lane_pos2(self.env.cur_pos, self.env.cur_angle)
         dist = lane_pose.dist  # Distance to lane center. Left is negative, right is positive.
-        angle = lane_pose.angle_rad % (2 * np.pi)
+        angle = lane_pose.angle_rad 
 
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
         # fixing velocity
-        if projected_angle_difference>0.96:
+        if projected_angle_difference>0.91:
             velocity = self.max_speed 
         else:
             velocity = self.min_speed 
 
         # Add terms to control
         steering_angle += angle
-        steering_angle += np.arctan2(self.gain * dist, self.ref_velocity)
+        steering_angle += np.arctan2(self.gain * dist, velocity)  
 
         # Translate to angular speed
-        omega = velocity * np.sin(steering_angle) * 25 # v sin(theta) / r
+        #TODO use the model to predict the steering angle which is easier to tune on the bot
+        omega = velocity * np.sin(steering_angle) * 27 # v sin(theta) / r
         action = [velocity, omega]
 
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
