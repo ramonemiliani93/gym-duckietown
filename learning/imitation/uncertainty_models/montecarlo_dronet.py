@@ -74,8 +74,8 @@ class MonteCarloDronet(nn.Module):
         self.col_corner =nn.Sequential(
             nn.Linear(self.num_feats_extracted, 1)
         )
-        self.max_speed = 0.75
-        self.min_speed = 0.35
+        self.max_speed = 0.8
+        self.min_speed = 0.25
 
         self.max_speed_tensor = torch.tensor(self.max_speed).to(self._device)
         self.min_speed_tensor = torch.tensor(self.min_speed).to(self._device)
