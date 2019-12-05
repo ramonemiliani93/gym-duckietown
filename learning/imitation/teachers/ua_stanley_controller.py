@@ -4,9 +4,10 @@ import numpy as np
 from src.gym_duckietown.simulator import NotInLane
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
-GAIN = 1.5
-FOLLOWING_DISTANCE = 0.35
+GAIN = 1.
+FOLLOWING_DISTANCE = 0.4 # slowing down before the corner
 
+#https://www.ri.cmu.edu/pub_files/2009/2/Automatic_Steering_Methods_for_Autonomous_Automobile_Path_Tracking.pdf
 
 class Stanley:
     def __init__(self, env, ref_velocity=REF_VELOCITY, gain=GAIN, following_distance=FOLLOWING_DISTANCE, position_threshold=POSITION_THRESHOLD):
@@ -39,7 +40,7 @@ class Stanley:
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
         # fixing velocity
-        if projected_angle_difference>0.91:
+        if projected_angle_difference>0.98:
             velocity = self.max_speed 
         else:
             velocity = self.min_speed 
@@ -47,12 +48,11 @@ class Stanley:
         # Add terms to control
         steering_angle += angle
         steering_angle += np.arctan2(self.gain * dist, velocity)  
-
+        # steering angle range np.pi
         # Translate to angular speed
         #TODO use the model to predict the steering angle which is easier to tune on the bot
-        omega = velocity * np.sin(steering_angle) * 27 # v sin(theta) / r
+        omega = velocity * np.sin(steering_angle) /  self.env.delta_time # v sin(theta) / timestep
         action = [velocity, omega]
-
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
         if position_diff > self.position_threshold:  # or velocity_diff > 0.5:
             return action, 0.0
