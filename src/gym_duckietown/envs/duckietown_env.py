@@ -75,6 +75,8 @@ class DuckietownEnv(Simulator):
 
     def step(self, action):
         vel, angle = action
+        # convert steering angle to omega
+        angle = vel * np.sin(angle) /  self.delta_time
 
         # Distance between the wheels
         baseline = self.unwrapped.wheel_dist
