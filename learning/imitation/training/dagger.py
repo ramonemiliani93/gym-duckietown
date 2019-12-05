@@ -47,19 +47,12 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
         input_shape=(120,160)
     )
 
-    # return SimulatedDagger(env=env,
-    #                     teacher=teacher,
-    #                     learner=learner,
-    #                     horizon = task_horizon,
-    #                     episodes=task_episodes)
+    return SimulatedDagger(env=env,
+                        teacher=teacher,
+                        learner=learner,
+                        horizon = task_horizon,
+                        episodes=task_episodes)
 
-    return DAgger(env=env,
-                  teacher=teacher,
-                  learner=learner,
-                  horizon=task_horizon,
-                  episodes=task_episodes,
-                  alpha=MIXING_DECAYS[selected_mixing_decay]
-                  )
 
 
 if __name__ == '__main__':
