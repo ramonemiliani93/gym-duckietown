@@ -47,7 +47,9 @@ class Stanley:
 
         # Add terms to control
         steering_angle += angle
-        steering_angle += np.arctan2(self.gain * dist, velocity)  
+        steering_angle += np.arctan2(self.gain * dist, velocity) 
+        if abs(steering_angle) > np.pi/2:
+            steering_angle = np.sign(steering_angle) * np.pi/2 
         # steering angle range np.pi
         # Translate to angular speed
         #TODO use the model to predict the steering angle which is easier to tune on the bot
