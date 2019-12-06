@@ -74,8 +74,8 @@ class MonteCarloDronet(nn.Module):
         self.col_corner =nn.Sequential(
             nn.Linear(self.num_feats_extracted, 1)
         )
-        self.max_speed = 0.8
-        self.min_speed = 0.25
+        self.max_speed = 0.75
+        self.min_speed = 0.35
 
         self.max_speed_tensor = torch.tensor(self.max_speed).to(self._device)
         self.min_speed_tensor = torch.tensor(self.min_speed).to(self._device)
@@ -109,7 +109,7 @@ class MonteCarloDronet(nn.Module):
         prob_corner, omega = self.forward(images)
         # post processing v values to its max and min counterparts
         prob_corner = torch.sigmoid(prob_corner) 
-        v_tensor  =  torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
+        v_tensor  = (1 - prob_corner) * self.min_speed_tensor + (prob_corner) * self.max_speed_tensor  # torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
         omega =  np.pi * omega
         output = torch.cat((v_tensor, omega), 1)
         return output
