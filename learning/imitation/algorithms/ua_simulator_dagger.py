@@ -9,8 +9,8 @@ class SimulatedDagger(DAgger):
     def __init__(self, env, teacher, learner, horizon, episodes):
         InteractiveImitationLearning.__init__(self, env, teacher, learner, horizon, episodes)
         # expert decay
-        self.convergence_distance = 0.05
-        self.convergence_angle = np.pi / 24 
+        self.convergence_distance = 0.1
+        self.convergence_angle = np.pi / 12 
         self.angle_limit = np.pi / 6
         self.distance_limit = 0.2
 

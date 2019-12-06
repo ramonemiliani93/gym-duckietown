@@ -110,7 +110,7 @@ class MonteCarloDronet(nn.Module):
         # post processing v values to its max and min counterparts
         prob_corner = torch.sigmoid(prob_corner) 
         v_tensor  =  torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
-        omega =  torch.atan(omega)
+        omega =  np.pi * omega
         output = torch.cat((v_tensor, omega), 1)
         return output
 

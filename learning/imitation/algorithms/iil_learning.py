@@ -50,7 +50,8 @@ class InteractiveImitationLearning:
                 self._current_horizon = horizon
                 action = self._act(observation)
                 try:
-                    next_observation, reward, done, info = self.environment.step(action)
+                    next_observation, reward, done, info = self.environment.step(
+                        action)
                 except Exception as e:
                     print(e)
                 if self._debug:
@@ -66,9 +67,11 @@ class InteractiveImitationLearning:
         else:
             control_policy = self._mix()
 
-        control_action, uncertainty = control_policy.predict(observation, [self._episode, None])
+        control_action, uncertainty = control_policy.predict(
+            observation, [self._episode, None])
 
-        self._query_expert(control_policy, control_action, uncertainty, observation)
+        self._query_expert(control_policy, control_action,
+                           uncertainty, observation)
 
         self.active_policy = control_policy == self.teacher
 
@@ -82,7 +85,8 @@ class InteractiveImitationLearning:
             self.learner_action = control_action
             self.learner_uncertainty = uncertainty  # it might but it wont
         else:
-            self.learner_action, self.learner_uncertainty = self.learner.predict(observation, [self._episode, None])
+            self.learner_action, self.learner_uncertainty = self.learner.predict(
+                observation, [self._episode, None])
 
         if control_policy == self.teacher:
             self.teacher_action = control_action
@@ -108,7 +112,8 @@ class InteractiveImitationLearning:
         self._expert_actions.append(action)
 
     def _optimize(self):
-        loss = self.learner.optimize(self._observations, self._expert_actions, self._episode)
+        loss = self.learner.optimize(
+            self._observations, self._expert_actions, self._episode)
         self.learner.save()
         self._on_optimization_done(loss)
 
@@ -119,6 +124,10 @@ class InteractiveImitationLearning:
         self._episode_done_listeners.append(listener)
 
     def _on_episode_done(self):
+        if self._episode > 15:
+            self.environment.randomize_maps_on_reset = True
+        else:
+            self.randomize_maps_on_reset = False
         for listener in self._episode_done_listeners:
             listener.episode_done(self._episode)
 
