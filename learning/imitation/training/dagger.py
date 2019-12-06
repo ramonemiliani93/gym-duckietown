@@ -44,7 +44,8 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
         ),
         batch_size=16,
         epochs=50,
-        input_shape=(120,160)
+        input_shape=(120,160),
+        max_velocity = MAX_VELOCITY
     )
 
     return SimulatedDagger(env=env,

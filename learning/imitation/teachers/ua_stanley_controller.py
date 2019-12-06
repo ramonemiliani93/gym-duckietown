@@ -10,13 +10,12 @@ FOLLOWING_DISTANCE = 0.3 # slowing down before the corner
 #https://www.ri.cmu.edu/pub_files/2009/2/Automatic_Steering_Methods_for_Autonomous_Automobile_Path_Tracking.pdf
 
 class Stanley:
-    def __init__(self, env, ref_velocity=REF_VELOCITY, gain=GAIN, following_distance=FOLLOWING_DISTANCE, position_threshold=POSITION_THRESHOLD):
+    def __init__(self, env, max_velocity=REF_VELOCITY, gain=GAIN, following_distance=FOLLOWING_DISTANCE, position_threshold=POSITION_THRESHOLD):
         self.env = env
-        self.ref_velocity = ref_velocity
         self.gain = gain
         self.following_distance = following_distance
         self.position_threshold = position_threshold
-        self.max_speed = 0.75
+        self.max_speed = max_velocity
 
     def predict(self, observation, metadata):
 
@@ -39,7 +38,7 @@ class Stanley:
         # Project to curve to find curvature
         projected_angle_difference, closest_point = self._get_projected_angle_difference()
         # fixing velocity
-        velocity = self.max_speed * projected_angle_difference
+        velocity = self.max_speed * abs(projected_angle_difference) # the speed should be always positive
 
         # Add terms to control
         steering_angle += angle
@@ -49,8 +48,7 @@ class Stanley:
         # steering angle range -2 * np.pi ,2 * np.pi
         # Translate to angular speed
         #TODO use the model to predict the steering angle which is easier to tune on the bot
-        omega = velocity * np.sin(steering_angle) /  self.env.delta_time # v sin(theta) / timestep
-        action = [velocity, omega]
+        action = [velocity, steering_angle]
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
         if position_diff > self.position_threshold:  # or velocity_diff > 0.5:
             return action, 0.0

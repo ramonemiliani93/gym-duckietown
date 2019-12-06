@@ -66,50 +66,49 @@ class MonteCarloDronet(nn.Module):
         )
 
         self.num_feats_extracted = 2560
-        self.omega_channel = nn.Sequential(
+        self.steering_angle_channel = nn.Sequential(
             nn.Linear(self.num_feats_extracted,1)
         )
 
-        # Collision / Corner detected channel
-        self.col_corner =nn.Sequential(
+        # predicting speed scale
+        self.vel_channel =nn.Sequential(
             nn.Linear(self.num_feats_extracted, 1)
         )
-        self.max_speed = 0.75
 
-        self.max_speed_tensor = torch.tensor(self.max_speed).to(self._device)
-        self.speed_threshold = (self.max_speed) / 2
         self.decay = 1/10
         self.alpha = 0
-        self.epoch_0 = 10
+        self.epoch_0 = 25
         self.epoch = 0
+        self.set_max_velocity()
+    
+    def set_max_velocity(self, max_velocity = 0.75):
+        self.max_velocity = 0.75
+        self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
+        self.speed_threshold = (self.max_velocity) / 2
 
     def forward(self, images):
         features = self.feature_extractor(images)
-        omega = self.omega_channel(features)
-        corner_detect = self.col_corner(features)
-        return corner_detect, omega
+        steering_angle = self.steering_angle_channel(features)
+        velocity = self.vel_channel(features)
+        return velocity, steering_angle
     
 
     def loss(self, *args):
         self.train()
         images, target = args
-        corner_detect, omega = self.forward(images) 
-        criterion_v = nn.BCEWithLogitsLoss()
-        is_corner = (target[:,0] < self.speed_threshold).float().unsqueeze(1)  # 0 for expert speeding up and 1 for slowing down for a corner or an incoming duckbot
-        loss_omega = F.mse_loss(omega, target[:,1].unsqueeze(1), reduction='mean')
-        loss_corner = criterion_v(corner_detect, is_corner)
-        loss = loss_omega + loss_corner * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        velocity, steering_angle = self.forward(images) 
+        loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
+        loss_v = F.mse_loss(velocity, target[:,0].unsqueeze(1), reduction='mean')
+        loss = loss_steering_angle + loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
     
 
     def predict(self, *args):
         images = args[0]
-        prob_corner, omega = self.forward(images)
-        # post processing v values to its max and min counterparts
-        prob_corner = torch.sigmoid(prob_corner) 
-        v_tensor  =  (prob_corner) * self.max_speed_tensor  # torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
-        omega =  np.pi * omega
-        output = torch.cat((v_tensor, omega), 1)
+        velocity, steering_angle = self.forward(images)
+        v_tensor  =  (velocity) * self.max_speed_tensor  # torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
+        steering_angle = 2 *  np.pi * steering_angle
+        output = torch.cat((v_tensor, steering_angle), 1)
         return output
 
     def predict_with_uncertainty(self, *args):

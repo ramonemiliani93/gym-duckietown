@@ -75,6 +75,7 @@ class DuckietownEnv(Simulator):
 
     def step(self, action):
         vel, angle = action
+        angle = vel * np.sin(angle) /  self.delta_time # v sin(theta) / timestep
 
         # Distance between the wheels
         baseline = self.unwrapped.wheel_dist

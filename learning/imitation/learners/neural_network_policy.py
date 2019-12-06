@@ -31,6 +31,8 @@ class NeuralNetworkPolicy(BaseLearner):
         self.epochs = kwargs.get('epochs', 10)
         self.batch_size = kwargs.get('batch_size', 32)
         self.input_shape = kwargs.get('input_shape', (60, 80))
+        self.max_velocity = kwargs.get('max_velocity', 0.75)
+        self.model.set_max_velocity(self.max_velocity)
 
         self.episode = 0
 
@@ -102,12 +104,13 @@ class NeuralNetworkPolicy(BaseLearner):
         compose_obs = Compose([
             ToTensor(),
             Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # using imagenet normalization values
-            #Normalize((0, 0, 0), (1, 1, 1))
         ])
         
         observations = [compose_obs(observation).numpy() for observation in observations]
         try:
-            expert_actions = [np.array([expert_action[0], np.tanh(expert_action[1])]) for expert_action in expert_actions]
+            # scaling velocity to become in 0-1 range which is multiplied by max speed to get actual vel
+            # also scaling steering angle to become in range -1 to 1 to make it easier to regress
+            expert_actions = [np.array([expert_action[0] / (self.max_velocity), expert_action[1] / (2 * np.pi)]) for expert_action in expert_actions]
         except:
             # at the start the teacher is sending just [[0]]
             pass
