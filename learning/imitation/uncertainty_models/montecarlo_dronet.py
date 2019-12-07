@@ -77,7 +77,7 @@ class MonteCarloDronet(nn.Module):
 
         self.decay = 1/10
         self.alpha = 0
-        self.epoch_0 = 25
+        self.epoch_0 = 10
         self.epoch = 0
         self.set_max_velocity()
     
