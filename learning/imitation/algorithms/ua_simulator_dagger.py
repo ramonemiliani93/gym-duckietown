@@ -11,7 +11,8 @@ class SimulatedDagger(DAgger):
         # expert decay
         self.convergence_distance = 0.05
         self.convergence_angle = np.pi / 18 
-        self.angle_limit = np.pi / 6
+        # making this limit stricter to avoid full spin as sometimes get lp values might get u the closer other direction lane if ur current angle is high 
+        self.angle_limit = np.pi / 12 
         self.distance_limit = 0.15
 
     def _mix(self):
