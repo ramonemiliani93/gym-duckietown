@@ -79,6 +79,7 @@ def simulation(at, env=None, reset=True, is_testing=False):
                 randomize_map_parent_dir='lf'
             )
             environment.randomize_maps_on_reset = False
+            environment.reset()
         else:
             environment = DuckietownEnv(
                 domain_rand=False,

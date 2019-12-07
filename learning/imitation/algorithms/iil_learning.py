@@ -62,7 +62,7 @@ class InteractiveImitationLearning:
 
     # execute current control policy
     def _act(self, observation):
-        if self._episode == 0:  # initial policy equals expert's
+        if self._episode <= 2:  # initial policy equals expert's
             control_policy = self.teacher
         else:
             control_policy = self._mix()
