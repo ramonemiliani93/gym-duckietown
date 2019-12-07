@@ -48,7 +48,8 @@ class Stanley:
         # steering angle range -2 * np.pi ,2 * np.pi
         # Translate to angular speed
         #TODO use the model to predict the steering angle which is easier to tune on the bot
-        action = [velocity, steering_angle]
+        omega = velocity * np.sin(steering_angle) /  self.env.delta_time # v sin(theta) / timestep
+        action = [velocity, omega]
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
         if position_diff > self.position_threshold:  # or velocity_diff > 0.5:
             return action, 0.0
