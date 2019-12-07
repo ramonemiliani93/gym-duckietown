@@ -75,6 +75,8 @@ class DuckietownEnv(Simulator):
 
     def step(self, action):
         vel, angle = action
+        gain = 10 # pure pursuit angular gain
+        angle = angle * gain
         # Distance between the wheels
         baseline = self.unwrapped.wheel_dist
 

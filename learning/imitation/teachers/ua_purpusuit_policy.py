@@ -39,8 +39,8 @@ class UAPurePursuitPolicy:
         point_vec /= np.linalg.norm(point_vec)
         right_vec = np.array([math.sin(self.env.cur_angle),0,math.cos(self.env.cur_angle)])
         dot = np.dot(right_vec, point_vec)
-        omega = GAIN * -dot
-
+        omega = -1 * dot
+        # range of dot is just -pi/2 and pi/2
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
 
         action = [self.ref_velocity * scale , omega]

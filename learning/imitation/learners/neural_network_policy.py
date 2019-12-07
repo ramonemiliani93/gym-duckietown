@@ -31,7 +31,7 @@ class NeuralNetworkPolicy(BaseLearner):
         self.epochs = kwargs.get('epochs', 10)
         self.batch_size = kwargs.get('batch_size', 32)
         self.input_shape = kwargs.get('input_shape', (60, 80))
-        self.max_velocity = kwargs.get('max_velocity', 0.75)
+        self.max_velocity = kwargs.get('max_velocity', 0.8)
         self.model.set_max_velocity(self.max_velocity)
 
         self.episode = 0
@@ -110,7 +110,7 @@ class NeuralNetworkPolicy(BaseLearner):
         try:
             # scaling velocity to become in 0-1 range which is multiplied by max speed to get actual vel
             # also scaling steering angle to become in range -1 to 1 to make it easier to regress
-            expert_actions = [np.array([expert_action[0] / (self.max_velocity), np.tanh(expert_action[1]) ]) for expert_action in expert_actions]
+            expert_actions = [np.array([expert_action[0], np.tanh(expert_action[1]) ]) for expert_action in expert_actions]
         except:
             # at the start the teacher is sending just [[0]]
             pass
