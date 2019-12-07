@@ -5,7 +5,7 @@ import numpy as np
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 10
-FOLLOWING_DISTANCE = 0.25
+FOLLOWING_DISTANCE = 0.3
 
 
 class UAPurePursuitPolicy:
@@ -26,9 +26,12 @@ class UAPurePursuitPolicy:
         lookup_distance = self.following_distance
         projected_angle, _, _= self._get_projected_angle_difference(0.3)
         scale = 1
-        if projected_angle<0.95:
+
+        current_tile_pos = self.env.get_grid_coords(self.env.cur_pos)
+        current_tile = self.env._get_tile(*current_tile_pos)
+        if 'curve' in current_tile['kind'] or abs(projected_angle)<0.92:
             # we have a corner brace yourselves
-            scale = 0.5
+            scale = 0.45 
         _, closest_point, curve_point= self._get_projected_angle_difference(lookup_distance)
 
         if closest_point is None:  # if cannot find a curve point in max iterations
