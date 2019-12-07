@@ -12,7 +12,7 @@ class SimulatedDagger(DAgger):
         self.convergence_distance = 0.1
         self.convergence_angle = np.pi / 12 
         self.angle_limit = np.pi / 6
-        self.distance_limit = 0.17
+        self.distance_limit = 0.13
 
     def _mix(self):
         try:
