@@ -62,7 +62,7 @@ class InteractiveImitationLearning:
 
     # execute current control policy
     def _act(self, observation):
-        if self._episode <= 2:  # initial policy equals expert's
+        if self._episode <= 1:  # initial policy equals expert's
             control_policy = self.teacher
         else:
             control_policy = self._mix()
@@ -124,7 +124,7 @@ class InteractiveImitationLearning:
         self._episode_done_listeners.append(listener)
 
     def _on_episode_done(self):
-        if self._episode > 15:
+        if self._episode > 7:
             self.environment.randomize_maps_on_reset = True
         else:
             self.randomize_maps_on_reset = False

@@ -5,7 +5,7 @@ import numpy as np
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 10
-FOLLOWING_DISTANCE = 0.27
+FOLLOWING_DISTANCE = 0.3
 
 
 class UAPurePursuitPolicy:
