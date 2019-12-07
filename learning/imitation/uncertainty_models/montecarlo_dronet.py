@@ -82,7 +82,7 @@ class MonteCarloDronet(nn.Module):
         self.set_max_velocity()
     
     def set_max_velocity(self, max_velocity = 0.75):
-        self.max_velocity = 0.75
+        self.max_velocity = max_velocity
         self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
         self.min_speed_pure_pursuit = (self.max_velocity) / 2
 
