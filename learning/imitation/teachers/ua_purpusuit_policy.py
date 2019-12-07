@@ -5,7 +5,7 @@ import numpy as np
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 10
-FOLLOWING_DISTANCE = 0.3
+FOLLOWING_DISTANCE = 0.25
 
 
 class UAPurePursuitPolicy:
@@ -19,30 +19,19 @@ class UAPurePursuitPolicy:
 
     def predict(self, observation, metadata):
         closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
-        print(self.env.cur_angle)
         if closest_point is None or closest_tangent is None:
             self.env.reset()
             closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
 
-        iterations = 0
         lookup_distance = self.following_distance
-        curve_point = None
-        print(self.max_iterations)
-        while iterations < 10:
-            # Project a point ahead along the curve tangent,
-            # then find the closest point to to that
-            follow_point = closest_point + closest_tangent * lookup_distance
-            curve_point, _ = self.env.closest_curve_point(follow_point, self.env.cur_angle)
+        projected_angle, _, _= self._get_projected_angle_difference(0.3)
+        scale = 1
+        if projected_angle<0.95:
+            # we have a corner brace yourselves
+            scale = 0.5
+        _, closest_point, curve_point= self._get_projected_angle_difference(lookup_distance)
 
-            # If we have a valid point on the curve, stop
-            if curve_point is not None:
-                print(iterations)
-                break
-
-            iterations += 1
-            lookup_distance *= 0.5
-
-        if iterations == self.max_iterations:  # if cannot find a curve point in max iterations
+        if closest_point is None:  # if cannot find a curve point in max iterations
             return None, np.inf
 
         # Compute a normalized vector to the curve point
@@ -54,7 +43,7 @@ class UAPurePursuitPolicy:
 
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
 
-        action = [self.ref_velocity, omega]
+        action = [self.ref_velocity * scale , omega]
 
         # print(position_diff, velocity_diff)
 
@@ -67,3 +56,30 @@ class UAPurePursuitPolicy:
                 return action, 0.0
 
         return None, math.inf
+    
+
+    def _get_projected_angle_difference(self, lookup_distance):
+        # Find the projection along the path
+        closest_point, closest_tangent = self.env.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
+
+        iterations = 0
+        curve_angle = None
+
+        while iterations < 10:
+            # Project a point ahead along the curve tangent,
+            # then find the closest point to to that
+            follow_point = closest_point + closest_tangent * lookup_distance
+            curve_point, curve_angle = self.env.closest_curve_point(follow_point, self.env.cur_angle)
+
+            # If we have a valid point on the curve, stop
+            if curve_angle is not None and curve_point is not None:
+                break
+
+            iterations += 1
+            lookup_distance *= 0.5
+
+        if curve_angle is None:  # if cannot find a curve point in max iterations
+            return None, None, None
+
+        else:
+            return np.dot(curve_angle, closest_tangent), closest_point, curve_point

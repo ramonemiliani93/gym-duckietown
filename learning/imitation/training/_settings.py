@@ -104,16 +104,16 @@ def robot():
     return DuckiebotEnv()
 
 
-# def teacher(env):
-#     return UAPurePursuitPolicy(
-#         env=env
-#     )
-
 def teacher(env):
-    return Stanley(
-        env=env,
-        max_velocity=MAX_VELOCITY
+    return UAPurePursuitPolicy(
+        env=env
     )
+
+# def teacher(env):
+#     return Stanley(
+#         env=env,
+#         max_velocity=MAX_VELOCITY
+#     )
 
 # def teacher(env):
 #     return StanleyLFV(
