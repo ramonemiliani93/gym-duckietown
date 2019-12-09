@@ -33,6 +33,7 @@ class InteractiveImitationLearning:
         self._optimization_done_listener = []
         self._episode_done_listeners = []
         self._process_done_listeners = []
+        self._found_obstacle = False
 
     def train(self, samples=1, debug=False):
         self._debug = debug
@@ -103,6 +104,11 @@ class InteractiveImitationLearning:
             self.teacher_queried = False
         else:
             self.teacher_queried = False
+
+        if self.teacher_action[0] < 0.1:
+            self._found_obstacle = True
+        else:
+            self._found_obstacle = False
 
     def _mix(self):
         raise NotImplementedError()

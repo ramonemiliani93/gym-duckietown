@@ -60,20 +60,13 @@ class UAPurePursuitPolicy:
         omega = -1 * dot
         # range of dot is just -pi/2 and pi/2
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
+        velocity = self.ref_velocity * scale 
+        if velocity_slow_down<1:
+            velocity *= velocity_slow_down
 
-        action = [self.ref_velocity * scale * velocity_slow_down , omega]
+        action = [velocity , omega]
 
-        # print(position_diff, velocity_diff)
-
-        if position_diff > self.position_threshold:  # or velocity_diff > 0.5:
-            return action, 0.0
-        else:
-            if metadata[0] == 0:
-                return action, 0.0
-            if metadata[1] is None:
-                return action, 0.0
-
-        return None, math.inf
+        return action, 0.0
     
 
     def _get_projected_angle_difference(self, lookup_distance):

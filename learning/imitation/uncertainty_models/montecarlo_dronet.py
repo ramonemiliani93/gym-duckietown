@@ -92,7 +92,7 @@ class MonteCarloDronet(nn.Module):
         self.max_velocity = max_velocity
         self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
         self.min_speed_pure_pursuit = (self.max_velocity) * 0.5
-        self.stop_speed_threshold = torch.tensor(0.2).to(self._device)
+        self.stop_speed_threshold = torch.tensor(0.12).to(self._device)
         self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
 
     def forward(self, images):

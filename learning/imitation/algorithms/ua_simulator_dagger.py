@@ -16,6 +16,8 @@ class SimulatedDagger(DAgger):
         self.distance_limit = 0.15
 
     def _mix(self):
+        if self._found_obstacle:
+            return self.teacher
         try:
             lp = self.environment.get_lane_pos2(self.environment.cur_pos, self.environment.cur_angle)
         except :
