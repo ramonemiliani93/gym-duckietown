@@ -1,11 +1,12 @@
 import math
-
 import numpy as np
+from src.gym_duckietown.simulator import AGENT_SAFETY_RAD
 
 POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 10
 FOLLOWING_DISTANCE = 0.25
+AGENT_SAFETY_GAIN = 1.
 
 
 class UAPurePursuitPolicy:
@@ -22,6 +23,20 @@ class UAPurePursuitPolicy:
         if closest_point is None or closest_tangent is None:
             self.env.reset()
             closest_point, closest_tangent = self.env.unwrapped.closest_curve_point(self.env.cur_pos, self.env.cur_angle)
+
+        current_world_objects = self.env.objects
+        velocity_slow_down = 1
+        for obj in current_world_objects:
+            if not obj.static and obj.kind == "duckiebot": 
+                #TODO need to check the other object direction if he is moving n my same lane or not
+                if True:
+                    collision_penalty =  abs(obj.proximity(self.env.cur_pos, AGENT_SAFETY_RAD * AGENT_SAFETY_GAIN))
+                    if collision_penalty > 0 :
+                        # this means we are approaching and we need to slow down
+                        velocity_slow_down = collision_penalty
+                        break
+                else:
+                    pass
 
         lookup_distance = self.following_distance
         projected_angle, _, _= self._get_projected_angle_difference(0.3)
@@ -46,7 +61,7 @@ class UAPurePursuitPolicy:
         # range of dot is just -pi/2 and pi/2
         position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
 
-        action = [self.ref_velocity * scale , omega]
+        action = [self.ref_velocity * scale * velocity_slow_down , omega]
 
         # print(position_diff, velocity_diff)
 
