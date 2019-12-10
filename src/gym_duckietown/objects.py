@@ -113,7 +113,7 @@ class DuckiebotObj(WorldObj):
             self.follow_dist = np.random.uniform(0.3, 0.4)
             self.velocity = np.random.uniform(0.05, 0.15)
             self.gain = gain + np.random.uniform(-0.3, 0.3)
-            self.trim = trim + np.random.uniform(-0.1, 0.1) + 2
+            self.trim = trim #+ np.random.uniform(-0.1, 0.1) + 2
             self.radius = radius + 0.0002 * np.random.uniform(-1, 1)
             self.wheel_dist = wheel_dist + 0.01 * np.random.uniform(-1, 1)
             self.robot_width = robot_width + 0.01 * np.random.uniform(-1, 1)
