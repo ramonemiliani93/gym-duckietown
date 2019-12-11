@@ -10,7 +10,7 @@ import numpy as np
 from torchvision.models.resnet import conv1x1, conv3x3
 
 
-
+device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gamma):
     """Compute the Class Balanced Loss between `logits` and the ground truth `labels`.
@@ -33,7 +33,7 @@ def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gam
 
     labels_one_hot = F.one_hot(labels.to(torch.int64), no_of_classes).float()
 
-    weights = torch.tensor(weights).float()
+    weights = torch.tensor(weights).float().to(device_)
     weights = weights.unsqueeze(0)
     weights = weights.repeat(labels_one_hot.shape[0],1) * labels_one_hot 
     weights = weights.squeeze().sum(1).sum(1) 
