@@ -42,7 +42,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                 'decay': MIXING_DECAYS[config.decay]
             }
         ),
-        batch_size=16,
+        batch_size=32,
         epochs=50,
         input_shape=(120,160),
         max_velocity = MAX_VELOCITY
