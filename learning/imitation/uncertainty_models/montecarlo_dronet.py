@@ -157,7 +157,7 @@ class MonteCarloDronet(nn.Module):
         # loss_obstacle = criterion(collision_detect, is_colliding)
         samples_per_cls = [torch.where(is_colliding==0)[0].shape[0] , torch.where(is_colliding==1)[0].shape[0]]
         loss_obstacle = CB_loss(is_colliding, collision_detect,samples_per_cls,2,'sigmoid',0.999,2.0)
-        loss = loss_steering_angle + ( loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )+ ( loss_obstacle * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0*1.5))) )
+        loss = loss_steering_angle + ( loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )+ ( loss_obstacle * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
         return loss
     
 
