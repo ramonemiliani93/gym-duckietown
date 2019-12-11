@@ -9,6 +9,47 @@ import torch.nn.init as init
 import numpy as np
 from torchvision.models.resnet import conv1x1, conv3x3
 
+
+
+
+def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gamma):
+    """Compute the Class Balanced Loss between `logits` and the ground truth `labels`.
+    Class Balanced Loss: ((1-beta)/(1-beta^n))*Loss(labels, logits)
+    where Loss is one of the standard losses used for Neural Networks.
+    Args:
+      labels: A int tensor of size [batch].
+      logits: A float tensor of size [batch, no_of_classes].
+      samples_per_cls: A python list of size [no_of_classes].
+      no_of_classes: total number of classes. int
+      loss_type: string. One of "sigmoid", "focal", "softmax".
+      beta: float. Hyperparameter for Class balanced loss.
+      gamma: float. Hyperparameter for Focal loss.
+    Returns:
+      cb_loss: A float tensor representing class balanced loss
+    """
+    effective_num = 1.0 - np.power(beta, samples_per_cls)
+    weights = (1.0 - beta) / (np.array(effective_num) + 1e-6)
+    weights = weights / np.sum(weights) * no_of_classes
+
+    labels_one_hot = F.one_hot(labels.to(torch.int64), no_of_classes).float()
+
+    weights = torch.tensor(weights).float()
+    weights = weights.unsqueeze(0)
+    weights = weights.repeat(labels_one_hot.shape[0],1) * labels_one_hot 
+    weights = weights.squeeze().sum(1).sum(1) 
+    # weights = weights.unsqueeze(1)
+    # weights = weights.repeat(1,no_of_classes)
+
+    if loss_type == "focal":
+        cb_loss = focal_loss(labels_one_hot, logits, weights, gamma)
+    elif loss_type == "sigmoid":
+        criterion = nn.BCEWithLogitsLoss(weight = weights.unsqueeze(1))
+        cb_loss = criterion(logits, labels)
+    elif loss_type == "softmax":
+        pred = logits.softmax(dim = 1)
+        cb_loss = F.binary_cross_entropy(input = pred, target = labels_one_hot, weight = weights)
+    return cb_loss
+
 def _get_padding(size, kernel_size, stride, dilation):
     padding = ((size - 1) * (stride - 1) + dilation * (kernel_size - 1)) //2
     return padding
@@ -92,7 +133,7 @@ class MonteCarloDronet(nn.Module):
         self.max_velocity = max_velocity
         self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
         self.min_speed_pure_pursuit = (self.max_velocity) * 0.5
-        self.stop_speed_threshold = torch.tensor(0.12).to(self._device)
+        self.stop_speed_threshold = torch.tensor(0.14).to(self._device)
         self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
 
     def forward(self, images):
@@ -106,13 +147,17 @@ class MonteCarloDronet(nn.Module):
         self.train()
         images, target = args
         is_speed_up, collision_detect, steering_angle = self.forward(images) 
-        criterion = nn.BCEWithLogitsLoss()
+        
         is_colliding = (target[:,0]<self.stop_speed_threshold).float().unsqueeze(1) 
         speed_up = (target[:,0] > self.min_speed_pure_pursuit).float().unsqueeze(1)  # 0 for expert speeding up and 1 for slowing down for a corner or an incoming duckbot
         loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
-        loss_v = criterion(is_speed_up, speed_up)
-        loss_obstacle = criterion(collision_detect, is_colliding)
-        loss = loss_steering_angle + ( loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )+ ( loss_obstacle * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
+        samples_per_cls = [torch.where(speed_up==0)[0].shape[0] , torch.where(speed_up==1)[0].shape[0]]
+        # loss_v = criterion(is_speed_up, speed_up)
+        loss_v = CB_loss(speed_up, is_speed_up,samples_per_cls,2,'sigmoid',0.999,2.0)
+        # loss_obstacle = criterion(collision_detect, is_colliding)
+        samples_per_cls = [torch.where(is_colliding==0)[0].shape[0] , torch.where(is_colliding==1)[0].shape[0]]
+        loss_obstacle = CB_loss(is_colliding, collision_detect,samples_per_cls,2,'sigmoid',0.999,2.0)
+        loss = loss_steering_angle + ( loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )+ ( loss_obstacle * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0*1.5))) )
         return loss
     
 
@@ -121,7 +166,7 @@ class MonteCarloDronet(nn.Module):
         is_speed_up, prob_coll, steering_angle = self.forward(images)
         prob_coll = torch.sigmoid(prob_coll)
         is_speed_up = torch.sigmoid(is_speed_up)
-        coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )
+        coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )[0]
         v_tensor  =  (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  # torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
         steering_angle =  steering_angle * np.pi / 2
 
