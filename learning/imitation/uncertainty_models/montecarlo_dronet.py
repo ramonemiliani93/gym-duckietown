@@ -168,7 +168,7 @@ class MonteCarloDronet(nn.Module):
         is_speed_up = torch.sigmoid(is_speed_up)
         coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )[0]
         v_tensor  =  (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  # torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
-        steering_angle =  steering_angle * np.pi / 2
+        steering_angle =  torch.atan(steering_angle )
 
         v_tensor[coll_mask==0] = self.stop_speed 
         steering_angle[coll_mask==0] = self.stop_speed
