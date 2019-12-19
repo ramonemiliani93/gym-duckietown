@@ -85,6 +85,7 @@ class MonteCarloDronet(nn.Module):
         self.max_velocity = max_velocity
         self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
         self.min_speed_pure_pursuit = (self.max_velocity) * 0.5
+        self.min_speed_tensor = torch.tensor(self.min_speed_pure_pursuit).to(self._device)
 
     def forward(self, images):
         features = self.feature_extractor(images)
@@ -108,7 +109,7 @@ class MonteCarloDronet(nn.Module):
         images = args[0]
         is_speed_up, steering_angle = self.forward(images)
         is_speed_up = torch.sigmoid(is_speed_up)
-        v_tensor  =  torch.where(is_speed_up>0.5, self.max_speed_tensor, self.min_speed_pure_pursuit )  # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  # 
+        v_tensor  =  torch.where(is_speed_up>0.5, self.max_speed_tensor, self.min_speed_tensor )  # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  # 
         steering_angle =  steering_angle * ( np.pi / 2)
         output = torch.cat((v_tensor, steering_angle), 1)
         return output

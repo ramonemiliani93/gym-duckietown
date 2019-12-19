@@ -110,7 +110,7 @@ class NeuralNetworkPolicy(BaseLearner):
         try:
             # scaling velocity to become in 0-1 range which is multiplied by max speed to get actual vel
             # also scaling steering angle to become in range -1 to 1 to make it easier to regress
-            expert_actions = [np.array([expert_action[0], np.tanh(expert_action[1] )  ]) for expert_action in expert_actions]
+            expert_actions = [np.array([expert_action[0], expert_action[1] / (np.pi / 2)  ]) for expert_action in expert_actions]
         except:
             # at the start the teacher is sending just [[0]]
             pass
