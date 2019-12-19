@@ -52,7 +52,8 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
                         teacher=teacher,
                         learner=learner,
                         horizon = task_horizon,
-                        episodes=task_episodes)
+                        episodes=task_episodes,
+                        alpha=MIXING_DECAYS[config.decay])
 
 
 
