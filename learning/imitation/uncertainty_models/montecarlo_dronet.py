@@ -143,6 +143,7 @@ class MonteCarloDronet(nn.Module):
         return is_speed_up, collision_detect, steering_angle
 
     def loss(self, *args):
+        criterion = nn.BCEWithLogitsLoss()
         self.train()
         images, target = args
         is_speed_up, collision_detect, steering_angle = self.forward(images) 
@@ -151,11 +152,11 @@ class MonteCarloDronet(nn.Module):
         speed_up = (target[:,0] > self.min_speed_pure_pursuit).float().unsqueeze(1)  # 0 for expert speeding up and 1 for slowing down for a corner or an incoming duckbot
         loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
         samples_per_cls = [torch.where(speed_up==0)[0].shape[0] , torch.where(speed_up==1)[0].shape[0]]
-        # loss_v = criterion(is_speed_up, speed_up)
-        loss_v = CB_loss(speed_up, is_speed_up,samples_per_cls,2,'sigmoid',0.999,2.0)
-        # loss_obstacle = criterion(collision_detect, is_colliding)
-        samples_per_cls = [torch.where(is_colliding==0)[0].shape[0] , torch.where(is_colliding==1)[0].shape[0]]
-        loss_obstacle = CB_loss(is_colliding, collision_detect,samples_per_cls,2,'sigmoid',0.999,2.0)
+        loss_v = criterion(is_speed_up, speed_up)
+        # loss_v = CB_loss(speed_up, is_speed_up,samples_per_cls,2,'sigmoid',0.999,2.0)
+        loss_obstacle = criterion(collision_detect, is_colliding)
+        # samples_per_cls = [torch.where(is_colliding==0)[0].shape[0] , torch.where(is_colliding==1)[0].shape[0]]
+        # loss_obstacle = CB_loss(is_colliding, collision_detect,samples_per_cls,2,'sigmoid',0.999,2.0)
         loss = loss_steering_angle + ( loss_v * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )+ ( loss_obstacle * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
         return loss
     
