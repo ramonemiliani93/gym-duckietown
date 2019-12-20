@@ -40,9 +40,7 @@ def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gam
     # weights = weights.unsqueeze(1)
     # weights = weights.repeat(1,no_of_classes)
 
-    if loss_type == "focal":
-        cb_loss = focal_loss(labels_one_hot, logits, weights, gamma)
-    elif loss_type == "sigmoid":
+    if loss_type == "sigmoid":
         criterion = nn.BCEWithLogitsLoss(weight = weights.unsqueeze(1))
         cb_loss = criterion(logits, labels)
     elif loss_type == "softmax":
@@ -133,6 +131,7 @@ class MonteCarloDronet(nn.Module):
         self.max_velocity = max_velocity
         self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
         self.min_speed_pure_pursuit = (self.max_velocity) * 0.5
+        self.min_speed_tensor = torch.tensor(self.min_speed_pure_pursuit).to(self._device)
         self.stop_speed_threshold = torch.tensor(0.14).to(self._device)
         self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
 
@@ -167,8 +166,8 @@ class MonteCarloDronet(nn.Module):
         prob_coll = torch.sigmoid(prob_coll)
         is_speed_up = torch.sigmoid(is_speed_up)
         coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )[0]
-        v_tensor  =  (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  # torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor )  
-        steering_angle =  torch.atan(steering_angle )
+        v_tensor  =  torch.where(is_speed_up>0.5, self.max_speed_tensor, self.min_speed_tensor )   # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  
+        steering_angle =  steering_angle  * (np.pi/2)
 
         v_tensor[coll_mask==0] = self.stop_speed 
         steering_angle[coll_mask==0] = self.stop_speed
