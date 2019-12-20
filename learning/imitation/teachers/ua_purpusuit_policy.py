@@ -6,7 +6,7 @@ POSITION_THRESHOLD = 0.04
 REF_VELOCITY = 0.8
 GAIN = 10
 FOLLOWING_DISTANCE = 0.24
-AGENT_SAFETY_GAIN = 1.1
+AGENT_SAFETY_GAIN = 1.15
 
 
 class UAPurePursuitPolicy:
@@ -28,8 +28,8 @@ class UAPurePursuitPolicy:
         velocity_slow_down = 1
         for obj in current_world_objects:
             if not obj.static and obj.kind == "duckiebot": 
-                #TODO need to check the other object direction if he is moving n my same lane or not
-                if True:
+                #TODO need to check the other object direction if he is moving in my same lane or not
+                if abs(obj.pos[0] - self.env.cur_pos[0]) <0.1:
                     collision_penalty =  abs(obj.proximity(self.env.cur_pos, AGENT_SAFETY_RAD * AGENT_SAFETY_GAIN))
                     if collision_penalty > 0 :
                         # this means we are approaching and we need to slow down

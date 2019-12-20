@@ -15,7 +15,7 @@ class SimulatedDagger(DAgger):
         self.convergence_angle = np.pi / 18 
         # making this limit stricter to avoid full spin as sometimes get lp values might get u the closer other direction lane if ur current angle is high 
         self.angle_limit = np.pi / 8 
-        self.distance_limit = 0.2
+        self.distance_limit = 0.15
 
     def _mix(self):
         control_policy = np.random.choice(
