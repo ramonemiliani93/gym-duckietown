@@ -14,7 +14,7 @@ class SimulatedDagger(DAgger):
         self.convergence_distance = 0.05
         self.convergence_angle = np.pi / 18 
         # making this limit stricter to avoid full spin as sometimes get lp values might get u the closer other direction lane if ur current angle is high 
-        self.angle_limit = np.pi / 8 
+        self.angle_limit = np.pi / 8
         self.distance_limit = 0.15
 
     def _mix(self):
@@ -32,6 +32,8 @@ class SimulatedDagger(DAgger):
             # check for convergence if we are using the teacher to move back to our learner
             if abs(lp.dist) < self.convergence_distance and abs(lp.angle_rad)< self.convergence_angle:
                 return self.learner
+            else:
+                return self.teacher # this means keep using the teacher
         else:
             # in case we are using our learner and it started to diverge a lot we need to give 
             # control back to expert 
