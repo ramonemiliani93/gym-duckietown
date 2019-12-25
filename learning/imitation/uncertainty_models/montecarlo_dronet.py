@@ -111,17 +111,17 @@ class MonteCarloDronet(nn.Module):
         images, target = args
         obstacle_found, velocity, steering_angle = self.forward(images) 
         is_colliding = (target[:,0]<self.stop_speed_threshold).float().unsqueeze(1) 
-        
-        loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean') 
         # update the v coming from the teacher to make it easier for the model
         velocity_target = target[:, 0].unsqueeze(1).clone()
         velocity_target[target[:,0]>self.min_speed_pure_pursuit] = self.max_speed_tensor
-        velocity_target[target[:,0]<self.min_speed_limit] = self.min_speed_tensor
-        loss_velocity =  F.mse_loss(velocity, velocity_target, reduction='mean')
+        velocity_target[target[:,0]<self.min_speed_limit] = self.min_speed_tensor 
 
+        predicted_action = torch.cat([velocity, steering_angle],axis=1)
+        target_action = torch.cat([velocity_target,  target[:,1].unsqueeze(1)],axis=1)
+        loss_action =  F.mse_loss(predicted_action, target_action, reduction='mean')
         criterion = nn.BCEWithLogitsLoss()
         loss_obstacle = criterion(obstacle_found, is_colliding)
-        loss = loss_steering_angle + loss_velocity + loss_obstacle  * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        loss = loss_action  + loss_obstacle  * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
     
 
