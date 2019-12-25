@@ -86,7 +86,13 @@ class MonteCarloDronet(nn.Module):
         self.set_max_velocity()
     
     def set_max_velocity(self, max_velocity = 0.75):
-        pass
+        self.max_velocity = max_velocity
+        self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
+        self.min_speed_pure_pursuit = (self.max_velocity) * 0.5
+        self.min_speed_limit = (self.max_velocity) * 0.65
+        self.min_speed_tensor = torch.tensor(self.min_speed_pure_pursuit).to(self._device)
+        self.stop_speed_threshold = torch.tensor(0.14).to(self._device)
+        self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
 
     def forward(self, images):
         features = self.feature_extractor(images)
@@ -99,8 +105,13 @@ class MonteCarloDronet(nn.Module):
         images, target = args
         velocity, steering_angle = self.forward(images) 
         loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean') 
-        loss_velocity =  F.mse_loss(velocity, target[:,0].unsqueeze(1), reduction='mean')
-        loss = loss_steering_angle + ( loss_velocity * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
+        # update the v coming from the teacher to make it easier for the model
+        velocity_target = target[:, 0].unsqueeze(1).clone()
+        velocity_target[target[:,0]>self.min_speed_pure_pursuit] = self.max_speed_tensor
+        velocity_target[target[:,0]<self.min_speed_limit] = self.min_speed_tensor
+        velocity_target[target[:,0]<self.stop_speed_threshold] = self.stop_speed
+        loss_velocity =  F.mse_loss(velocity, velocity_target, reduction='mean')
+        loss = loss_steering_angle + loss_velocity
         return loss
     
 
