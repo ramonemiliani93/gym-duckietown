@@ -59,7 +59,7 @@ class UAPurePursuitPolicy:
         dot = np.dot(right_vec, point_vec)
         omega = -1 * dot
         # range of dot is just -pi/2 and pi/2
-        velocity = self.ref_velocity # * scale 
+        velocity = self.ref_velocity  * scale 
         if velocity_slow_down<1:
             velocity *= velocity_slow_down
 
