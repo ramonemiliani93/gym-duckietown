@@ -12,42 +12,6 @@ from torchvision.models.resnet import conv1x1, conv3x3
 
 device_ = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gamma):
-    """Compute the Class Balanced Loss between `logits` and the ground truth `labels`.
-    Class Balanced Loss: ((1-beta)/(1-beta^n))*Loss(labels, logits)
-    where Loss is one of the standard losses used for Neural Networks.
-    Args:
-      labels: A int tensor of size [batch].
-      logits: A float tensor of size [batch, no_of_classes].
-      samples_per_cls: A python list of size [no_of_classes].
-      no_of_classes: total number of classes. int
-      loss_type: string. One of "sigmoid", "focal", "softmax".
-      beta: float. Hyperparameter for Class balanced loss.
-      gamma: float. Hyperparameter for Focal loss.
-    Returns:
-      cb_loss: A float tensor representing class balanced loss
-    """
-    effective_num = 1.0 - np.power(beta, samples_per_cls)
-    weights = (1.0 - beta) / (np.array(effective_num) + 1e-6)
-    weights = weights / np.sum(weights) * no_of_classes
-
-    labels_one_hot = F.one_hot(labels.to(torch.int64), no_of_classes).float()
-
-    weights = torch.tensor(weights).float().to(device_)
-    weights = weights.unsqueeze(0)
-    weights = weights.repeat(labels_one_hot.shape[0],1) * labels_one_hot 
-    weights = weights.squeeze().sum(1).sum(1) 
-    # weights = weights.unsqueeze(1)
-    # weights = weights.repeat(1,no_of_classes)
-
-    if loss_type == "sigmoid":
-        criterion = nn.BCEWithLogitsLoss(weight = weights.unsqueeze(1))
-        cb_loss = criterion(logits, labels)
-    elif loss_type == "softmax":
-        pred = logits.softmax(dim = 1)
-        cb_loss = F.binary_cross_entropy(input = pred, target = labels_one_hot, weight = weights)
-    return cb_loss
-
 def _get_padding(size, kernel_size, stride, dilation):
     padding = ((size - 1) * (stride - 1) + dilation * (kernel_size - 1)) //2
     return padding
@@ -109,9 +73,8 @@ class MonteCarloDronet(nn.Module):
             nn.Linear(self.num_feats_extracted,1)
         )
 
-        # Multi class between None, a corner and obstacle
-        self.speed_up_collision = nn.Sequential(
-            nn.Linear(self.num_feats_extracted, 3)
+        self.velocity_channel = nn.Sequential(
+            nn.Linear(self.num_feats_extracted, 1)
         )
 
         self.decay = 1/10
@@ -123,49 +86,29 @@ class MonteCarloDronet(nn.Module):
         self.set_max_velocity()
     
     def set_max_velocity(self, max_velocity = 0.75):
-        self.max_velocity = max_velocity
-        self.max_speed_tensor = torch.tensor(self.max_velocity).to(self._device)
-        self.min_speed_pure_pursuit = (self.max_velocity) * 0.5
-        self.min_speed_tensor = torch.tensor(self.min_speed_pure_pursuit).to(self._device)
-        self.stop_speed_threshold = torch.tensor(0.14).to(self._device)
-        self.stop_speed = torch.tensor(0,dtype=torch.float).to(self._device)
+        pass
 
     def forward(self, images):
         features = self.feature_extractor(images)
         steering_angle = self.steering_angle_channel(features)
-        class_iscorner_speed_up = self.speed_up_collision(features)
-        class_iscorner_speed_up = nn.functional.log_softmax(class_iscorner_speed_up, dim=1)
-        return class_iscorner_speed_up, steering_angle
+        velocity = self.velocity_channel(features) 
+        return velocity, steering_angle
 
     def loss(self, *args): 
-        criterion = nn.CrossEntropyLoss()
         self.train()
         images, target = args
-        class_iscorner_speed_up, steering_angle = self.forward(images) 
-        
-        speed_up = (target[:,0] > self.min_speed_pure_pursuit).float().unsqueeze(1) 
-        loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
-
-        target_speed_corner_labels = torch.zeros(speed_up.shape[0]).long().to(self._device) # no obstacle or corner
-        target_speed_corner_labels[target[:,0] > self.min_speed_pure_pursuit] = 1
-        target_speed_corner_labels[target[:,0]<self.stop_speed_threshold] = 2
-        loss_speed_corner = criterion(class_iscorner_speed_up,target_speed_corner_labels)
-
-        loss = loss_steering_angle + ( loss_speed_corner * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
+        velocity, steering_angle = self.forward(images) 
+        loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean') 
+        loss_velocity =  F.mse_loss(velocity, target[:,0].unsqueeze(1), reduction='mean')
+        loss = loss_steering_angle + ( loss_velocity * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
         return loss
     
 
     def predict(self, *args):
         images = args[0]
-        class_iscorner_speed_up, steering_angle = self.forward(images)
-        class_iscorner_speed_up = class_iscorner_speed_up.argmax(dim=1, keepdim=True) 
-        coll_mask = torch.where(class_iscorner_speed_up==2 , self.mask_zero, self.mask_one )[0]
-        v_tensor  =  torch.where(class_iscorner_speed_up==0, self.max_speed_tensor, self.min_speed_tensor )   # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  
+        velocity, steering_angle = self.forward(images)
         steering_angle =  steering_angle  * (np.pi/2)
-
-        v_tensor[coll_mask==0] = self.stop_speed 
-        steering_angle[coll_mask==0] = self.stop_speed
-        output = torch.cat((v_tensor, steering_angle), 1)
+        output = torch.cat((velocity, steering_angle), 1)
         return output
 
     def predict_with_uncertainty(self, *args):
