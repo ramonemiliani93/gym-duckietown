@@ -3,7 +3,7 @@ import numpy as np
 from src.gym_duckietown.simulator import AGENT_SAFETY_RAD
 
 POSITION_THRESHOLD = 0.04
-REF_VELOCITY = 0.8
+REF_VELOCITY = 0.7
 GAIN = 10
 FOLLOWING_DISTANCE = 0.24
 AGENT_SAFETY_GAIN = 1.15
@@ -59,8 +59,7 @@ class UAPurePursuitPolicy:
         dot = np.dot(right_vec, point_vec)
         omega = -1 * dot
         # range of dot is just -pi/2 and pi/2
-        position_diff = np.linalg.norm(closest_point - self.env.cur_pos, ord=1)
-        velocity = self.ref_velocity * scale 
+        velocity = self.ref_velocity # * scale 
         if velocity_slow_down<1:
             velocity *= velocity_slow_down
 
