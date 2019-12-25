@@ -115,7 +115,6 @@ class MonteCarloDronet(nn.Module):
         velocity_target = target[:, 0].unsqueeze(1).clone()
         velocity_target[target[:,0]>self.min_speed_pure_pursuit] = self.max_speed_tensor
         velocity_target[target[:,0]<self.min_speed_limit] = self.min_speed_tensor 
-        velocity_target[target[:,0]<self.stop_speed_threshold] = self.stop_speed 
 
         predicted_action = torch.cat([velocity, steering_angle],axis=1)
         target_action = torch.cat([velocity_target,  target[:,1].unsqueeze(1)],axis=1)
@@ -133,6 +132,7 @@ class MonteCarloDronet(nn.Module):
         coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )[0]
         steering_angle =  steering_angle  * (np.pi/2)
         velocity[coll_mask==0] = self.stop_speed 
+        steering_angle[coll_mask==0] = self.stop_speed
         output = torch.cat((velocity, steering_angle), 1)
         return output
 
