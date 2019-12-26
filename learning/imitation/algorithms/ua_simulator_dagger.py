@@ -30,9 +30,7 @@ class SimulatedDagger(DAgger):
             return control_policy
         if self.active_policy:
             # check for convergence if we are using the teacher to move back to our learner
-            if abs(lp.dist) < self.convergence_distance and abs(lp.angle_rad)< self.convergence_angle:
-                return self.learner
-            else:
+            if not(abs(lp.dist) < self.convergence_distance and abs(lp.angle_rad)< self.convergence_angle):
                 return self.teacher
         else:
             # in case we are using our learner and it started to diverge a lot we need to give 
