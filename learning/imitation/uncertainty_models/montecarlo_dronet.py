@@ -69,12 +69,8 @@ class MonteCarloDronet(nn.Module):
         )
 
         self.num_feats_extracted = 2560
-        self.steering_angle_channel = nn.Sequential(
-            nn.Linear(self.num_feats_extracted,1)
-        )
-
-        self.velocity_channel = nn.Sequential(
-            nn.Linear(self.num_feats_extracted, 1)
+        self.v_steering_angle_channel = nn.Sequential(
+            nn.Linear(self.num_feats_extracted,2)
         )
 
         # to predict if there's an obstacle in front of it
@@ -101,8 +97,10 @@ class MonteCarloDronet(nn.Module):
 
     def forward(self, images):
         features = self.feature_extractor(images)
-        steering_angle = self.steering_angle_channel(features)
-        velocity = self.velocity_channel(features) 
+
+        p_v_steering = self.v_steering_angle_channel(features) 
+        steering_angle = p_v_steering[:,1].unsqueeze(1)
+        velocity = p_v_steering[:,0].unsqueeze(1)
         obstacle_found = self.collision_prob_channel(features)
         return obstacle_found, velocity, steering_angle
 
