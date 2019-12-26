@@ -48,7 +48,7 @@ def CB_loss(logits, labels, samples_per_cls, no_of_classes, loss_type, beta, gam
         criterion = nn.BCEWithLogitsLoss(weight = weights.unsqueeze(1))
         cb_loss = criterion(logits, labels)
     elif loss_type == "softmax":
-        cb_loss = F.binary_cross_entropy_with_logits(input = logits, target = labels_one_hot, weight = weights)
+        cb_loss = F.binary_cross_entropy_with_logits(input = logits.to(device_), target = labels_one_hot.to(device_), weight = weights.to(device_))
     return cb_loss
 
 
