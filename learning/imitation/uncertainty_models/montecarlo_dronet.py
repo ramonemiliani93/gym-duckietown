@@ -69,18 +69,18 @@ class MonteCarloDronet(nn.Module):
         )
 
         self.num_feats_extracted = 2560
-        self.v_steering_angle_channel = nn.Sequential(
-            nn.Linear(self.num_feats_extracted,2)
+        self.steering_angle_channel = nn.Sequential(
+            nn.Linear(self.num_feats_extracted,1)
         )
 
-        # to predict if there's an obstacle in front of it
-        self.collision_prob_channel = nn.Sequential(
-            nn.Linear(self.num_feats_extracted, 1)
+        # Multi class between None, a corner and obstacle
+        self.speed_up_collision = nn.Sequential(
+            nn.Linear(self.num_feats_extracted, 3)
         )
 
         self.decay = 1/10
         self.alpha = 0
-        self.epoch_0 = 10
+        self.epoch_0 = 7
         self.epoch = 0
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)
@@ -97,41 +97,38 @@ class MonteCarloDronet(nn.Module):
 
     def forward(self, images):
         features = self.feature_extractor(images)
-
-        p_v_steering = self.v_steering_angle_channel(features) 
-        steering_angle = p_v_steering[:,1].unsqueeze(1)
-        velocity = p_v_steering[:,0].unsqueeze(1)
-        obstacle_found = self.collision_prob_channel(features)
-        return obstacle_found, velocity, steering_angle
+        steering_angle = self.steering_angle_channel(features)
+        class_iscorner_speed_up = self.speed_up_collision(features)
+        return class_iscorner_speed_up, steering_angle
 
     def loss(self, *args): 
+        criterion = nn.CrossEntropyLoss()
         self.train()
         images, target = args
-        obstacle_found, velocity, steering_angle = self.forward(images) 
-        is_colliding = (target[:,0]<self.stop_speed_threshold).float().unsqueeze(1) 
-        # update the v coming from the teacher to make it easier for the model
-        velocity_target = target[:, 0].unsqueeze(1).clone()
-        velocity_target[target[:,0]>self.min_speed_pure_pursuit] = self.max_speed_tensor
-        velocity_target[target[:,0]<self.min_speed_limit] = self.min_speed_tensor 
+        class_iscorner_speed_up, steering_angle = self.forward(images) 
+        
+        speed_up = (target[:,0] > self.min_speed_pure_pursuit).float().unsqueeze(1) 
+        loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
 
-        predicted_action = torch.cat([velocity, steering_angle],axis=1)
-        target_action = torch.cat([velocity_target,  target[:,1].unsqueeze(1)],axis=1)
-        loss_action =  F.mse_loss(predicted_action, target_action, reduction='mean')
-        criterion = nn.BCEWithLogitsLoss()
-        loss_obstacle = criterion(obstacle_found, is_colliding)
-        loss = loss_action  + loss_obstacle  * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        target_speed_corner_labels = torch.zeros(speed_up.shape[0]).long().to(self._device) # no obstacle or corner
+        target_speed_corner_labels[target[:,0] < self.min_speed_limit] = 1 # to predict a corner
+        target_speed_corner_labels[target[:,0]<self.stop_speed_threshold] = 2 # to predict an obstacle
+        loss_speed_corner = criterion(class_iscorner_speed_up,target_speed_corner_labels)
+
+        loss = loss_steering_angle + ( loss_speed_corner * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
         return loss
-    
 
     def predict(self, *args):
         images = args[0]
-        obstacle_found, velocity, steering_angle = self.forward(images)
-        prob_coll = torch.sigmoid(obstacle_found)
-        coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )[0]
+        class_iscorner_speed_up, steering_angle = self.forward(images)
+        class_iscorner_speed_up = class_iscorner_speed_up.argmax(dim=1, keepdim=True) 
+        coll_mask = torch.where(class_iscorner_speed_up==2 , self.mask_zero, self.mask_one )[0]
+        v_tensor  =  torch.where(class_iscorner_speed_up==0, self.max_speed_tensor, self.min_speed_tensor )   # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  
         steering_angle =  steering_angle  * (np.pi/2)
-        velocity[coll_mask==0] = self.stop_speed 
+
+        v_tensor[coll_mask==0] = self.stop_speed 
         steering_angle[coll_mask==0] = self.stop_speed
-        output = torch.cat((velocity, steering_angle), 1)
+        output = torch.cat((v_tensor, steering_angle), 1)
         return output
 
     def predict_with_uncertainty(self, *args):
