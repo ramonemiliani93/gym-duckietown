@@ -149,10 +149,10 @@ class MonteCarloDronet(nn.Module):
         target_speed_corner_labels = torch.zeros(speed_up.shape[0]).long().to(self._device) # no obstacle or corner
         target_speed_corner_labels[target[:,0] < self.min_speed_limit] = 1 # to predict a corner
         target_speed_corner_labels[target[:,0]<self.stop_speed_threshold] = 2 # to predict an obstacle
-        # loss_speed_corner = criterion(class_iscorner_speed_up,target_speed_corner_labels)
+        loss_speed_corner = criterion(class_iscorner_speed_up,target_speed_corner_labels)
         
-        samples_per_cls = [torch.where(target_speed_corner_labels==0)[0].shape[0] , torch.where(target_speed_corner_labels==1)[0].shape[0], torch.where(target_speed_corner_labels==2)[0].shape[0]]
-        loss_speed_corner = CB_loss(class_iscorner_speed_up, target_speed_corner_labels,samples_per_cls,3,'softmax',0.999,2.0)
+        # samples_per_cls = [torch.where(target_speed_corner_labels==0)[0].shape[0] , torch.where(target_speed_corner_labels==1)[0].shape[0], torch.where(target_speed_corner_labels==2)[0].shape[0]]
+        # loss_speed_corner = CB_loss(class_iscorner_speed_up, target_speed_corner_labels,samples_per_cls,3,'softmax',0.999,2.0)
         
 
         loss = loss_steering_angle + ( loss_speed_corner * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
