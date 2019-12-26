@@ -116,7 +116,7 @@ class MonteCarloDronet(nn.Module):
 
         self.decay = 1/10
         self.alpha = 0
-        self.epoch_0 = 10
+        self.epoch_0 = 15
         self.epoch = 0
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)
@@ -161,9 +161,9 @@ class MonteCarloDronet(nn.Module):
     def predict(self, *args):
         images = args[0]
         class_iscorner_speed_up, steering_angle = self.forward(images)
-        class_iscorner_speed_up = class_iscorner_speed_up.argmax(dim=1, keepdim=True) 
-        coll_mask = torch.where(class_iscorner_speed_up==2 , self.mask_zero, self.mask_one )[0]
-        v_tensor  =  torch.where(class_iscorner_speed_up==0, self.max_speed_tensor, self.min_speed_tensor )   # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  
+        prob_speed_is_corner = torch.softmax(class_iscorner_speed_up, dim=1)
+        coll_mask = torch.where(prob_speed_is_corner[:,2].unsqueeze(1)>0.5 , self.mask_zero, self.mask_one )[0]
+        v_tensor  =  torch.where(prob_speed_is_corner[:,1].unsqueeze(1)<0.5, self.max_speed_tensor, self.min_speed_tensor )   # (is_speed_up) * self.max_speed_tensor + (1 - is_speed_up) * self.min_speed_pure_pursuit  
         steering_angle =  steering_angle  * (np.pi/2)
 
         v_tensor[coll_mask==0] = self.stop_speed 
