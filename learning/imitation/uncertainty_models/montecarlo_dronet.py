@@ -16,6 +16,42 @@ def _get_padding(size, kernel_size, stride, dilation):
     padding = ((size - 1) * (stride - 1) + dilation * (kernel_size - 1)) //2
     return padding
 
+def CB_loss(logits, labels, samples_per_cls, no_of_classes, loss_type, beta, gamma):
+    """Compute the Class Balanced Loss between `logits` and the ground truth `labels`.
+    Class Balanced Loss: ((1-beta)/(1-beta^n))*Loss(labels, logits)
+    where Loss is one of the standard losses used for Neural Networks.
+    Args:
+      labels: A int tensor of size [batch].
+      logits: A float tensor of size [batch, no_of_classes].
+      samples_per_cls: A python list of size [no_of_classes].
+      no_of_classes: total number of classes. int
+      loss_type: string. One of "sigmoid", "focal", "softmax".
+      beta: float. Hyperparameter for Class balanced loss.
+      gamma: float. Hyperparameter for Focal loss.
+    Returns:
+      cb_loss: A float tensor representing class balanced loss
+    """
+    effective_num = 1.0 - np.power(beta, samples_per_cls)
+    weights = (1.0 - beta) / (np.array(effective_num) + 1e-6)
+    weights = weights / np.sum(weights) * no_of_classes
+
+    labels_one_hot = F.one_hot(labels, no_of_classes).float()
+
+    weights = torch.tensor(weights).float()
+    weights = weights.unsqueeze(0)
+    weights = weights.repeat(labels_one_hot.shape[0],1) * labels_one_hot
+    weights = weights.sum(1)
+    weights = weights.unsqueeze(1)
+    weights = weights.repeat(1,no_of_classes)
+
+    if loss_type == "sigmoid":
+        criterion = nn.BCEWithLogitsLoss(weight = weights.unsqueeze(1))
+        cb_loss = criterion(logits, labels)
+    elif loss_type == "softmax":
+        cb_loss = F.binary_cross_entropy_with_logits(input = logits, target = labels_one_hot, weight = weights)
+    return cb_loss
+
+
 class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.shape[0], -1)    
@@ -113,7 +149,11 @@ class MonteCarloDronet(nn.Module):
         target_speed_corner_labels = torch.zeros(speed_up.shape[0]).long().to(self._device) # no obstacle or corner
         target_speed_corner_labels[target[:,0] < self.min_speed_limit] = 1 # to predict a corner
         target_speed_corner_labels[target[:,0]<self.stop_speed_threshold] = 2 # to predict an obstacle
-        loss_speed_corner = criterion(class_iscorner_speed_up,target_speed_corner_labels)
+        # loss_speed_corner = criterion(class_iscorner_speed_up,target_speed_corner_labels)
+        
+        samples_per_cls = [torch.where(target_speed_corner_labels==0)[0].shape[0] , torch.where(target_speed_corner_labels==1)[0].shape[0], torch.where(target_speed_corner_labels==2)[0].shape[0]]
+        loss_speed_corner = CB_loss(class_iscorner_speed_up, target_speed_corner_labels,samples_per_cls,3,'softmax',0.999,2.0)
+        
 
         loss = loss_steering_angle + ( loss_speed_corner * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) )
         return loss
