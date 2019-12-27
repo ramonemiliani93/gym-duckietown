@@ -116,7 +116,7 @@ class MonteCarloDronet(nn.Module):
 
         self.decay = 1/10
         self.alpha = 0
-        self.epoch_0 = 15
+        self.epoch_0 = 25
         self.epoch = 0
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)
