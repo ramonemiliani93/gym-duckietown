@@ -130,7 +130,7 @@ class InteractiveImitationLearning:
         self._episode_done_listeners.append(listener)
 
     def _on_episode_done(self):
-        if self._episode > 7:
+        if self._episode > 15:
             self.environment.randomize_maps_on_reset = True
         else:
             self.randomize_maps_on_reset = False
