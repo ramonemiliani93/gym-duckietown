@@ -69,13 +69,17 @@ class MonteCarloDronet(nn.Module):
         )
 
         self.num_feats_extracted = 2560
-        self.steering_angle_channel = nn.Sequential(
+        self.omega_channel = nn.Sequential(
             nn.Linear(self.num_feats_extracted,1)
         )
 
-
-        # predicting speed
-        self.speed_channel = nn.Sequential(
+        # Corner detected channel
+        self.corner =nn.Sequential(
+            nn.Linear(self.num_feats_extracted, 1)
+        )
+        
+        # Collision detected channel
+        self.collision =nn.Sequential(
             nn.Linear(self.num_feats_extracted, 1)
         )
 
@@ -99,23 +103,32 @@ class MonteCarloDronet(nn.Module):
 
     def forward(self, images):
         features = self.feature_extractor(images)
-        steering_angle = self.steering_angle_channel(features)
-        speed = self.speed_channel(features)
-        return speed, steering_angle
+        steering_angle = self.omega_channel(features)
+        corner_detect = self.corner(features)
+        collision_detect = self.collision(features)
+        return corner_detect, collision_detect, steering_angle
 
     def loss(self, *args):  
         self.train()
+        criterion_bce = nn.BCEWithLogitsLoss()
         images, target = args
-        speed , steering_angle= self.forward(images) 
+        corner_detect, collision_detected, steering_angle = self.forward(images) 
         loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
-        loss_speed = F.mse_loss(speed, target[:,0].unsqueeze(1) / self.max_speed, reduction='mean')
-        loss =  loss_steering_angle + (loss_speed * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))))
+        is_slowing_down = (target[:,0] < self.min_speed_limit).float().unsqueeze(1) 
+        is_colliding = (target[:,0]<self.stop_speed_threshold).float().unsqueeze(1)
+        loss_corner = criterion_bce(corner_detect, is_slowing_down)
+        loss_coll = criterion_bce(collision_detected, is_colliding )
+        loss =  loss_steering_angle +  (loss_corner * 0.4) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) + (loss_coll* 0.6) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))) 
         return loss
 
     def predict(self, *args):
         images = args[0]
-        v_tensor, steering_angle = self.forward(images)
-        v_tensor = v_tensor * self.max_speed_tensor
+        prob_corner, prob_coll, steering_angle = self.forward(images)
+        prob_coll = torch.sigmoid(prob_coll)
+        prob_corner = torch.sigmoid(prob_corner)
+        coll_mask = torch.where(prob_coll>0.5 , self.mask_zero, self.mask_one )
+        v_tensor = torch.where(prob_corner>0.5, self.min_speed_tensor, self.max_speed_tensor)
+        v_tensor[coll_mask==0] = self.stop_speed 
         output = torch.cat((v_tensor, steering_angle), 1)
         return output
 
