@@ -59,7 +59,7 @@ def dagger(env, teacher, experiment_iteration, selected_parametrization, selecte
 
 if __name__ == '__main__':
     parser = process_args()
-    parser.add_argument('--decay', '-d', default=6, type=int)
+    parser.add_argument('--decay', '-d', default=5, type=int)
 
     config = parser.parse_args()
     # training

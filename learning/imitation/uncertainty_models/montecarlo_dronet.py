@@ -90,6 +90,7 @@ class MonteCarloDronet(nn.Module):
         self.mask_zero = torch.tensor(0).to(self._device)
         self.mask_one = torch.tensor(1).to(self._device)
         self.set_max_velocity()
+        self.episode = 0
     
     def set_max_velocity(self, max_velocity = 0.75):
         self.max_velocity = max_velocity
@@ -117,7 +118,10 @@ class MonteCarloDronet(nn.Module):
         is_obstacle = (target[:,0] < self.stop_speed_threshold).float().unsqueeze(1)  
         loss_obstacle = criterion(collision_detect, is_obstacle)
         loss_corner = criterion(is_corner, is_corner_target)
-        loss = loss_steering_angle  +  0.5 * ( loss_obstacle + loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        if self.episode>15:
+            loss = loss_steering_angle  +  0.5 * ( loss_obstacle + loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        else:
+            loss = loss_steering_angle  +   (  loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
 
     def predict(self, *args):

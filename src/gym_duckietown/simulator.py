@@ -378,6 +378,9 @@ class Simulator(gym.Env):
         self.speed = 0
 
         if self.randomize_maps_on_reset:
+            if 'udem1' in self.map_names:
+                # remove it
+                self.map_names.remove('udem1')
             map_name = np.random.choice(self.map_names)
             self._load_map(map_name)
 
@@ -1419,10 +1422,12 @@ class Simulator(gym.Env):
             reward = 0
             done_code = 'max-steps-reached'
         else:
+            
             done = False
             reward = self.compute_reward(self.cur_pos, self.cur_angle, self.robot_speed)
             msg = ''
             done_code = 'in-progress'
+
         return DoneRewardInfo(done=done, done_why=msg, reward=reward, done_code=done_code)
 
     def _render_img(self, width, height, multi_fbo,

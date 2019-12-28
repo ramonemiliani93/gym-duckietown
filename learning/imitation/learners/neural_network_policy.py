@@ -51,6 +51,7 @@ class NeuralNetworkPolicy(BaseLearner):
 
     def optimize(self, observations, expert_actions, episode):
         self.episode = episode
+        self.model.episode = episode
         # Transform newly received data
         observations, expert_actions = self._transform(observations, expert_actions)
 
