@@ -109,7 +109,7 @@ class MonteCarloDronet(nn.Module):
         speed , steering_angle= self.forward(images) 
         loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
         loss_speed = F.mse_loss(speed, target[:,0].unsqueeze(1) / self.max_speed, reduction='mean')
-        loss = 0.5 * (loss_steering_angle + loss_speed )
+        loss =  loss_steering_angle + (loss_speed * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0))))
         return loss
 
     def predict(self, *args):

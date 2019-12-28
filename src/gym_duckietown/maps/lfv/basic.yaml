@@ -1,0 +1,74 @@
+tiles:
+- [asphalt,       asphalt,       asphalt,       curve_right/N, straight/W,    straight/W,    curve_left/N,  grass]
+- [curve_right/N, straight/W,    straight/W,    curve_left/E,  asphalt,       asphalt,       straight/N,    grass]
+- [straight/N,    grass,         grass,         grass,         asphalt,       asphalt,       straight/N,    grass]
+- [curve_right/W, straight/W,    straight/W,    curve_left/N,  asphalt,       asphalt,       curve_right/W, curve_left/N]
+- [asphalt,       asphalt,       asphalt,       curve_right/W, straight/W,    curve_left/N,  asphalt,       straight/N]
+- [asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       curve_right/W, straight/W,    curve_left/E]
+- [asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt,       asphalt]
+
+
+objects:
+
+- kind: tree
+  pos: [7.11, 2.31]
+  rotate: 94.34
+  height: 0.25
+
+- kind: sign_pedestrian
+  pos: [7.97, 0.29]
+  rotate: 150.15
+  height: 0.18
+
+- kind: sign_do_not_enter
+  pos: [5.58, 6.64]
+  rotate: 139.07
+  height: 0.18
+
+- kind: barrier
+  pos: [2.67, 4.92]
+  rotate: 218.84
+  height: 0.08
+
+- kind: sign_pedestrian
+  pos: [4.18, 1.41]
+  rotate: 184.21
+  height: 0.18
+
+- kind: sign_yield
+  pos: [4, 4]
+  rotate: 270.0
+  height: 0.18
+
+- kind: sign_yield
+  pos: [3.0, 4.0]
+  rotate: 90.0
+  height: 0.18
+
+- kind: sign_yield
+  pos: [4, 1]
+  rotate: 180.0
+  height: 0.18
+
+- kind: sign_yield
+  pos: [4.0, 0.0]
+  rotate: 0.0
+  height: 0.18
+
+- kind: sign_do_not_enter
+  pos: [6, 5]
+  rotate: 270.0
+  height: 0.18
+
+- kind: sign_do_not_enter
+  pos: [5.0, 5.0]
+  rotate: 90.0
+  height: 0.18
+
+- kind: duckie
+  pos: [5.8, 3.09]
+  rotate: 33.21
+  height: 0.0363
+
+tile_size: 0.585
+

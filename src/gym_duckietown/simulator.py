@@ -378,10 +378,15 @@ class Simulator(gym.Env):
         self.speed = 0
 
         if self.randomize_maps_on_reset:
-            if 'udem1' in self.map_names:
-                # remove it
-                self.map_names.remove('udem1')
-            map_name = np.random.choice(self.map_names)
+            # give more priority to lfv maps 
+            n_lfv_maps = 0
+            for map_name in self.map_names:
+                if 'lfv' in map_name:
+                    n_lfv_maps +=1 
+            n_normal_maps = len(self.map_names) - n_lfv_maps
+            prob_normal_map = 1 / (1.4 * len(self.map_names))
+            prob_lfv = (1 - (prob_normal_map * n_normal_maps)) / n_lfv_maps
+            map_name = np.random.choice(self.map_names, p= [prob_lfv if 'lfv' in map_name else prob_normal_map for map_indx, map_name in enumerate(self.map_names)])
             self._load_map(map_name)
 
         self.randomization_settings = self.randomizer.randomize()
