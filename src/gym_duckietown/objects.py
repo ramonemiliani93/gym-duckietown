@@ -171,6 +171,19 @@ class DuckiebotObj(WorldObj):
         velocity = self.velocity
         if abs(dot) > np.pi / 4 :
             velocity *= 0.5
+        velocity_slow_down = 1
+        for obj in objects:
+            if not obj.static and obj.kind == "duckiebot": 
+                if True:
+                    collision_penalty =  abs(obj.proximity(self.pos, 1.15 * 0.9 * 1.8))
+                    if collision_penalty > 0 :
+                        # this means we are approaching and we need to slow down
+                        velocity_slow_down = collision_penalty
+                        break
+                else:
+                    pass
+        if velocity_slow_down < 0.2:
+            velocity = 0
 
         self._update_pos([velocity, steering], delta_time)
 
