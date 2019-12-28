@@ -29,8 +29,7 @@ class UAPurePursuitPolicy:
         for obj in current_world_objects:
             if not obj.static and obj.kind == "duckiebot": 
                 #TODO need to check the other object direction if he is moving in my same lane or not
-                # can be checked in some sense of coordinates using abs(obj.pos[0] - self.env.cur_pos[0]) <0.1
-                if True:
+                if abs(obj.pos[0] - self.env.cur_pos[0]) <0.12:
                     collision_penalty =  abs(obj.proximity(self.env.cur_pos, AGENT_SAFETY_RAD * AGENT_SAFETY_GAIN))
                     if collision_penalty > 0 :
                         # this means we are approaching and we need to slow down
