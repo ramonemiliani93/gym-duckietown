@@ -1303,8 +1303,10 @@ class Simulator(gym.Env):
                     o for o in self.objects if
                     tuple(self.get_grid_coords(o.pos)) == (obj_i, obj_j) and o != obj
                 ]
-
-                obj.step(delta_time, self.closest_curve_point, same_tile_obj)
+                try:
+                    obj.step(delta_time, self.closest_curve_point, same_tile_obj)
+                except:
+                    obj.step(delta_time) # if it goes off road it will just stay in pos.
             else:
                 obj.step(delta_time)
 
