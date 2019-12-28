@@ -19,7 +19,7 @@ else:
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-MAP_NAME = 'loop_dyn_lfv' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
+MAP_NAME = 'udem1' #'loop_pedestrians'#'loop_dyn_lfv' #loop_empty
 MAP_STARTING_POSES = [
     [[0.8, 0.0, 1.5], 10.90],
     [[0.8, 0.0, 2.5], 10.90],

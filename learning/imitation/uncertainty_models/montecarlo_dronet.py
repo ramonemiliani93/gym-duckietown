@@ -117,7 +117,7 @@ class MonteCarloDronet(nn.Module):
         is_obstacle = (target[:,0] < self.stop_speed_threshold).float().unsqueeze(1)  
         loss_obstacle = criterion(collision_detect, is_obstacle)
         loss_corner = criterion(is_corner, is_corner_target)
-        loss = loss_steering_angle  +  (0.65 * loss_obstacle + 0.35 * loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        loss = loss_steering_angle  +  0.5 * ( loss_obstacle + loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
 
     def predict(self, *args):
