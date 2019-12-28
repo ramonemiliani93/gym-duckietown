@@ -110,7 +110,7 @@ class DuckiebotObj(WorldObj):
         WorldObj.__init__(self, obj, domain_rand, safety_radius_mult)
 
         if self.domain_rand:
-            self.follow_dist = np.random.uniform(0.3, 0.4)
+            self.follow_dist = 0.24# np.random.uniform(0.3, 0.4)
             self.velocity = np.random.uniform(0.05, 0.15)
             self.gain = gain + np.random.uniform(-0.3, 0.3)
             self.trim = trim #+ np.random.uniform(-0.1, 0.1) + 2
@@ -119,7 +119,7 @@ class DuckiebotObj(WorldObj):
             self.robot_width = robot_width + 0.01 * np.random.uniform(-1, 1)
             self.robot_length = robot_length + 0.01 * np.random.uniform(-1, 1)
         else:
-            self.follow_dist = 0.3
+            self.follow_dist = 0.24
             self.velocity = 0.1
             self.gain = gain
             self.trim = trim
@@ -168,8 +168,11 @@ class DuckiebotObj(WorldObj):
 
         dot = np.dot(self.get_right_vec(self.angle), point_vec)
         steering = self.gain * -dot
+        velocity = self.velocity
+        if abs(dot) > np.pi / 4 :
+            velocity *= 0.5
 
-        self._update_pos([self.velocity, steering], delta_time)
+        self._update_pos([velocity, steering], delta_time)
 
     def get_dir_vec(self, angle):
         x = math.cos(angle)
