@@ -61,8 +61,8 @@ class UAPurePursuitPolicy:
         omega = -1 * dot
         # range of dot is just -pi/2 and pi/2
         velocity = self.ref_velocity  * scale 
-        if velocity_slow_down<1:
-            velocity *= velocity_slow_down
+        if velocity_slow_down<0.2:
+            velocity = 0
 
         action = [velocity , omega]
 
