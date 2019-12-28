@@ -130,6 +130,7 @@ class InteractiveImitationLearning:
             self.randomize_maps_on_reset = False
         for listener in self._episode_done_listeners:
             listener.episode_done(self._episode)
+        self.environment.reset()
 
     # triggered when the learning step after an episode is done
     def on_optimization_done(self, listener):
