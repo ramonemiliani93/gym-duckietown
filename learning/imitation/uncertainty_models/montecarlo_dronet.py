@@ -128,6 +128,7 @@ class MonteCarloDronet(nn.Module):
         v_tensor  =  torch.where(corner_prob>0.5, self.min_speed_tensor, self.max_speed_tensor )
         coll_mask = torch.where(collision_prob>0.5 , self.mask_zero, self.mask_one )[0]
         v_tensor[coll_mask==0] = self.stop_speed 
+        steering_angle[coll_mask==0] = self.stop_speed
         output = torch.cat((v_tensor, steering_angle), 1)
         return output
 

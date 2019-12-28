@@ -63,6 +63,7 @@ class UAPurePursuitPolicy:
         velocity = self.ref_velocity  * scale 
         if velocity_slow_down<0.2:
             velocity = 0
+            omega = 0
 
         action = [velocity , omega]
 
