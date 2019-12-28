@@ -107,19 +107,17 @@ class MonteCarloDronet(nn.Module):
         collision_detect = self.col_channel(features)
         return is_corner, collision_detect, steering_angle
 
-    def loss(self, *args): 
-        
+    def loss(self, *args):  
         self.train()
         images, target = args
         is_corner, collision_detect, steering_angle= self.forward(images) 
         loss_steering_angle = F.mse_loss(steering_angle, target[:,1].unsqueeze(1), reduction='mean')
         is_corner_target = (target[:,0] < self.min_speed_limit).float().unsqueeze(1) 
         criterion = nn.BCEWithLogitsLoss()
-        loss_corner = criterion(is_corner, is_corner_target)
-        is_obstacle = (target[:,0] < self.stop_speed_threshold).float().unsqueeze(1) 
-        criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(1.25).to(self._device))
+        is_obstacle = (target[:,0] < self.stop_speed_threshold).float().unsqueeze(1)  
         loss_obstacle = criterion(collision_detect, is_obstacle)
-        loss = loss_steering_angle  +  0.5 * (loss_obstacle + loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
+        loss_corner = criterion(is_corner, is_corner_target)
+        loss = loss_steering_angle  +  (0.65 * loss_obstacle + 0.35 * loss_corner) * max(0, 1 - np.exp(self.decay * (self.epoch - self.epoch_0)))
         return loss
 
     def predict(self, *args):
